@@ -151,8 +151,19 @@ p2 <- hfat %>%
   scale_y_continuous(n.breaks = 11) +
   labs(x = "Hepatic fat fraction", y = "Empirical CDF")
 
+p3 <- hfat %>% 
+  ggplot(aes(x = hff)) +
+  geom_histogram() +
+  scale_x_continuous(trans = "log10") +
+  geom_vline(xintercept = c(0.05, 0.1, 0.2, 0.3), linetype = 2) +
+  labs(x = "Hepatic fat fraction (log-scale)")
+
 library(patchwork)
 p1 + p2
+
+# pdf("Histogram_HFF.pdf", height = 5, width = 10)
+# p1 + p3
+# dev.off()
 
 hfat %>% 
   filter(!is.na(hff)) %>% 
@@ -283,6 +294,21 @@ test <- hfat2 %>%
   labs(x = "BMI", y = "HFF")
 
 ggMarginal(test, type = "histogram")
+
+p4 <- test 
+
+p5 <- hfat2 %>% 
+  # filter(sn >= 100, FWHM <= 0.6) %>% 
+  ggplot(aes(x = bmi, y = hff)) +
+  geom_point() +
+  # scale_x_continuous(trans = "log10") +
+  # scale_y_continuous(trans = "log10") +
+  geom_smooth() +
+  labs(x = "BMI", y = "HFF")
+
+# pdf("Scatter_HFF_BMI.pdf", height = 5, width = 10)
+# p4 + p5
+# dev.off()
 
 # Pearson correlation on log scale: 0.318
 hfat2 %>% 
