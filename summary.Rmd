@@ -1,0 +1,204 @@
+---
+title: "HAT hepatic fat study"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+# Setup -------------------------------------------------------------------
+
+# Required packages
+pacs <- c("tidyverse", "haven", "ggExtra", "ggResidpanel")
+sapply(pacs, require, character.only = TRUE)
+
+```
+
+## Datasets
+
+* A CSV file `HAT_KeyVariables.csv` includes PIDs, their assigned group and date randomized, n = 1008
+
+* A CSV file `HAT_HFF.csv` includes PID, MRI dates and 3 variables about hepatic fat MRI measurements:
+  * `hff`: Hepatic fat fraction
+  * `FWHM`: Full width half maximum (the width of the peak measured at 50% of its maximum height), smaller the better
+  * `sn`: Signal/noise ratio, higher the better
+  * The file is in long format, having up to 2 MRI measurements per subject: n obs = 1932
+  
+* A SAS data file `final_n961_foodgroups_june2024.sas7bdat`
+  * n = 961
+  * Includes demographics (age, gender, race, education), BMI, and some dietary data
+
+## Data check on hepatic fat data
+
+```{r read_hff, echo = FALSE, warning = FALSE, message = FALSE}
+# Date randomized
+# n distinct = 1008
+randdate <- read_csv("./data/HAT_KeyVariables.csv") %>% 
+  mutate(d_randomized = as.Date(d_randomized, format = "%d%b%Y")) %>% 
+  select(pid, d_randomized)
+
+# MRI measurement of hepatic fat
+# n obs = 1932
+# n distinct = 1008
+hfat <- read_csv("./data/HAT_HFF.csv") %>% 
+  mutate(mridate = as.Date(mridate, format = "%d%b%y")) %>% 
+  inner_join(randdate, by = "pid") %>% 
+  mutate(prepost = ifelse(mridate <= d_randomized, 0, 1))
+
+# Number of MRIs
+n_MRI <- hfat %>% 
+  group_by(pid) %>% 
+  tally()
+```
+
+* The hepatic fat data file `HAT_HFF.csv` includes 1932 MRI measurements from 1008 distinct PIDs
+  * The file does not have a variable indicating if a measurement is a pre- or post-intervention
+  * The date of randomization was added from `HAT_KeyVariables.csv` to determine pre/post measurements
+
+* Most of the subjects (n = 924) have two MRI measurements:
+  * There were 3 subjects who have 2 measurements **after** randomization **[Decision needed]**
+  
+* There are 81 subjects who have only one MRI measurement
+  * Among them, 75 subjects have only pre-intervention measurement **[Decision needed]**
+  * Six subjects have only post-measurement **[Decision needed]**
+
+* There are 3 subjects who did not have any MRI measurements (i.e., MRI date missing, measurement missing)
+
+## Preliminary analysis on hepatic fat measurements
+
+* Disclaimer: The following analysis was done regardless of pre/post measurements
+
+* Descriptive statistics on `hff`, `FWHM`, `sn`:
+  * The HFF value ranges from 0.04% to 54%, with mean of 10%
+    * Its distribution appears to be very right-skewed
+  * Note the negative value of -1 on S/N ratio -- what does this indicate? **[Clarify]**
+  * There are 7 MRI measurements that have a value `-1` on S/N ratio 
+
+```{r hff_descriptive, echo = FALSE}
+hfat %>% 
+  select(hff, FWHM, sn) %>% 
+  summary()
+```
+
+### Distribution of HFF
+
+* A histogram and a cumulative density function of HFF are shown below
+  * Vertical dash lines divides HFF values into 5 groups at 5, 10, 20, and 30%
+  * The distribution of HFF is highly right-skewed, but very smooth without apparent separating points
+  * **[Decision needed]** What should we draw a line for outliers on HFF?
+
+```{r hff_distrib, echo = FALSE, warning = FALSE, message = FALSE, fig.width = 8, fig.height = 4}
+p1 <- hfat %>% 
+  ggplot(aes(x = hff)) +
+  geom_histogram() +
+  geom_vline(xintercept = c(0.05, 0.1, 0.2, 0.3), linetype = 2) +
+  labs(x = "Hepatic fat fraction")
+
+p2 <- hfat %>% 
+  ggplot(aes(x = hff)) +
+  stat_ecdf(geom = "step") +
+  geom_vline(xintercept = c(0.05, 0.1, 0.2, 0.3), linetype = 2) +
+  scale_y_continuous(n.breaks = 11) +
+  labs(x = "Hepatic fat fraction", y = "Empirical CDF")
+
+library(patchwork)
+p1 + p2
+```
+
+* A frequency table of HFF (5 groups):
+  * About 45% of measurements are "normal" having HFF <5%
+
+```{r hff_freqtab, echo = FALSE, warning = FALSE, message = FALSE, fig.width = 8, fig.height = 4}
+hfat %>% 
+  filter(!is.na(hff)) %>% 
+  mutate(hff_cat = cut(hff, breaks = c(0, 0.05, 0.1, 0.2, 0.3, Inf)),
+         hff_cat = factor(hff_cat, labels = c("Normal  : 0-5", "Mild    : 5-10", "Moderate: 10-20", "Severe  : 20-30", "Advanced: >30"))) %>% 
+  group_by(hff_cat) %>% 
+  tally() %>% 
+  mutate(pct = n / sum(n) * 100)
+```
+
+### Change in HFF
+
+* For those who have both pre- and post-measurements, changes in HFF value (post - pre) were calculated
+* A histogram of change in HFF is shown below
+  * Most of subjects have an absolute change <0.2
+
+```{r hff_change, echo = FALSE, warning = FALSE, message = FALSE}
+hfat_wide <- hfat %>% 
+  filter(!is.na(mridate)) %>% 
+  filter(!pid %in% c(15154629, 15217132, 15235033)) %>% 
+  mutate(prepost = factor(prepost, labels = c("Pre", "Post"))) %>%
+  select(pid, hff, FWHM, prepost) %>% 
+  pivot_wider(names_from = prepost, values_from = c(hff, FWHM))
+
+hfat_wide %>% 
+  mutate(hff_diff = hff_Post - hff_Pre) %>% 
+  ggplot(aes(x = hff_diff)) +
+  geom_histogram(aes(y = after_stat(count / sum(count)))) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Change in HFF (post - pre)",
+       y = "Percent")
+```
+
+* See the list below for those whose HFF value changed >0.2. There are 11 such subjects:
+  * **[Clarify]** Is it likely to see such change in HFF during the study period?
+
+```{r hff_change_list, echo = FALSE, warning = FALSE, message = FALSE}
+hfat_wide %>% 
+  mutate(hff_diff = hff_Post - hff_Pre) %>% 
+  filter(abs(hff_diff) > .2) %>% 
+  select(pid, hff_Pre, hff_Post, hff_diff)
+
+pid_large_hff_change <- hfat_wide %>% 
+  mutate(hff_diff = hff_Post - hff_Pre) %>% 
+  filter(abs(hff_diff) > .2) %>% 
+  distinct(pid)
+```
+
+* There are 23 subjects whose HFF value changed >0.15 (not shown here)
+
+
+### S/N ratio and FWHM
+
+* A scatterplot of S/N and FWHM is shown below, with histograms on margins.
+  * Those measurements of S/N = -1 are shown red in the figure
+  * Notice that both distributions are right-skewed
+  * **[Decision needed]** Where should we draw lines for potential outliers?
+    * For example, there are 18 measurements that have S/N < 100 (more noise) and FWHM > 0.6 (lower resolution)
+
+```{r sn_fwhm_scatter, echo = FALSE, warning = FALSE, message = FALSE, fig.width = 5, fig.height = 5}
+p <- hfat %>% 
+  ggplot(aes(x = sn, y = FWHM)) +
+  geom_point(color = "black") +
+  geom_point(data = hfat[hfat$sn < 0,], aes(x = sn, y = FWHM), color = "red") +
+  labs(x = "S/N")
+
+ggMarginal(p, type = "histogram")
+```
+
+### Relationship between HFF and BMI
+
+* A scatterplot between BMI and HFF is shown below
+  * Both axes are log-scale, due to their skewed distributions
+  * A smoothed trend curve is super-imposed (with 95% confidence intervals)
+
+```{r hff_bmi_scatter, echo = FALSE, warning = FALSE, message = FALSE, fig.width = 5, fig.height = 5}
+# Subjects: n = 961
+demog <- read_sas("./data/final_n961_foodgroups_june2024.sas7bdat")
+
+hfat2 <- hfat %>% 
+  left_join(demog %>% select(pid, bmi), by = "pid")
+
+test <- hfat2 %>% 
+  # filter(sn >= 100, FWHM <= 0.6) %>% 
+  ggplot(aes(x = bmi, y = hff)) +
+  geom_point() +
+  scale_x_continuous(trans = "log10") +
+  scale_y_continuous(trans = "log10") +
+  geom_smooth() +
+  labs(x = "BMI", y = "HFF")
+
+ggMarginal(test, type = "histogram")
+```
+
+* The Pearson correlation coefficient between BMI and HFF (both log-scale) was r = 0.32
+  * If MRI measurements of S/N < 100 and FWHM > 0.6 were removed, the correlation slightly reduced to r = 0.31
