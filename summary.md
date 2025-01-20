@@ -47,7 +47,8 @@ HAT hepatic fat study
 
 - Descriptive statistics on `hff`, `FWHM`, `sn`:
 
-  - The HFF value ranges from 0.04% to 54%, with mean of 10%
+  - The HFF value ranges from 0.04% to 54%, with mean of 10% (median
+    5.7%)
     - Its distribution appears to be very right-skewed
   - Note the negative value of -1 on S/N ratio – what does this
     indicate? **\[Clarify\]**
@@ -67,7 +68,7 @@ HAT hepatic fat study
 ### Distribution of HFF
 
 - A histogram and a cumulative density function of HFF are shown below
-  - Vertical dash lines divides HFF values into 5 groups at 5, 10, 20,
+  - Vertical dash lines divide HFF values into 5 groups at 5, 10, 20,
     and 30%
   - The distribution of HFF is highly right-skewed, but very smooth
     without apparent separating points
