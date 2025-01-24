@@ -202,3 +202,31 @@ ggMarginal(test, type = "histogram")
 
 * The Pearson correlation coefficient between BMI and HFF (both log-scale) was r = 0.32
   * If MRI measurements of S/N < 100 and FWHM > 0.6 were removed, the correlation slightly reduced to r = 0.31
+
+## Notes
+
+* Zoom meeting on 1/23/2025 (KL/GS/CH/KO)
+  * S/N = -1 indicates invalid values? 
+    * Kristie can look up PIDs of those subjects
+    * Dr. Barnes can look into those images to check if HFF values make sense
+  
+  * It is plausible to see changes of HFF > 0.2 according to Dr. Barnes
+    * Dig into past literature with similar intervention as well?
+  
+  * Any data on compliance on those with a large HFF change during study?
+  
+  * Need to determine cut-off values for HFF/FWHM/SN outliers
+
+  * Possible covariates to be included in the model
+    * Demographics (age/gender/race/education)
+    * BMI (pre/post)
+    * Any lifestyle variables? -- self-reported
+    * Nutrient intake? -- total kcal, SFA (kcal base), sugar?, CHO?
+      * Want to identify those overeating
+
+  * KO to proceed analysis without excluding potential outliers for now
+    * Can exclude any outliers later
+  * KL to communicate with Dr. Barnes
+  * GS to look into nutrient data
+  
+
