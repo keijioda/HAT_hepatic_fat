@@ -38,7 +38,8 @@ randdate <- read_csv("./data/HAT_KeyVariables.csv") %>%
 # MRI measurement of hepatic fat
 # n obs = 1932
 # n distinct = 1008
-hfat <- read_csv("./data/HAT_HFF.csv") %>% 
+# hfat <- read_csv("./data/HAT_HFF.csv") %>% 
+hfat <- read_csv("./data/HAT_HFF_SN_fixed.csv") %>% 
   mutate(mridate = as.Date(mridate, format = "%d%b%y")) %>% 
   inner_join(randdate, by = "pid") %>% 
   mutate(prepost = ifelse(mridate <= d_randomized, 0, 1))
@@ -69,8 +70,9 @@ n_MRI <- hfat %>%
 * Descriptive statistics on `hff`, `FWHM`, `sn`:
   * The HFF value ranges from 0.04% to 54%, with mean of 10% (median 5.7%)
     * Its distribution appears to be very right-skewed
-  * Note the negative value of -1 on S/N ratio -- what does this indicate? **[Clarify]**
-  * There are 7 MRI measurements that have a value `-1` on S/N ratio 
+  * ~~Note the negative value of -1 on S/N ratio -- what does this indicate? **[Clarify]**~~
+  * ~~There are 7 MRI measurements that have a value `-1` on S/N ratio~~
+  * The issue of S/N = -1 has been corrected -- see the email correspondence on 1/27/25
 
 ```{r hff_descriptive, echo = FALSE}
 hfat %>% 
@@ -169,7 +171,7 @@ pid_large_hff_change <- hfat_wide %>%
 p <- hfat %>% 
   ggplot(aes(x = sn, y = FWHM)) +
   geom_point(color = "black") +
-  geom_point(data = hfat[hfat$sn < 0,], aes(x = sn, y = FWHM), color = "red") +
+  # geom_point(data = hfat[hfat$sn < 0,], aes(x = sn, y = FWHM), color = "red") +
   labs(x = "S/N")
 
 ggMarginal(p, type = "histogram")
@@ -206,9 +208,10 @@ ggMarginal(test, type = "histogram")
 ## Notes
 
 * Zoom meeting on 1/23/2025 (KL/GS/CH/KO)
-  * S/N = -1 indicates invalid values? 
-    * Kristie can look up PIDs of those subjects
-    * Dr. Barnes can look into those images to check if HFF values make sense
+  * ~~S/N = -1 indicates invalid values?~~ 
+    * ~~Kristie can look up PIDs of those subjects~~
+    * ~~Dr. Barnes can look into those images to check if HFF values make sense~~
+    * **[Updated]** The issue of S/N = -1 has been corrected -- see the email correspondence on 1/27/25
   
   * It is plausible to see changes of HFF > 0.2 according to Dr. Barnes
     * Dig into past literature with similar intervention as well?
@@ -224,8 +227,7 @@ ggMarginal(test, type = "histogram")
     * Nutrient intake? -- total kcal, SFA (kcal base), sugar?, CHO?
       * Want to identify those overeating
 
-  * KO to proceed analysis without excluding potential outliers for now
-    * Can exclude any outliers later
+  * KO to proceed analysis without excluding potential outliers for now -- Can exclude any outliers later
   * KL to communicate with Dr. Barnes
   * GS to look into nutrient data
   

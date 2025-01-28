@@ -50,19 +50,21 @@ HAT hepatic fat study
   - The HFF value ranges from 0.04% to 54%, with mean of 10% (median
     5.7%)
     - Its distribution appears to be very right-skewed
-  - Note the negative value of -1 on S/N ratio – what does this
-    indicate? **\[Clarify\]**
-  - There are 7 MRI measurements that have a value `-1` on S/N ratio
+  - ~~Note the negative value of -1 on S/N ratio – what does this
+    indicate? **\[Clarify\]**~~
+  - ~~There are 7 MRI measurements that have a value `-1` on S/N ratio~~
+  - The issue of S/N = -1 has been corrected – see the email
+    correspondence on 1/27/25
 
 <!-- -->
 
-    ##       hff                 FWHM             sn       
-    ##  Min.   :0.0004123   Min.   :0.117   Min.   : -1.0  
-    ##  1st Qu.:0.0247974   1st Qu.:0.252   1st Qu.:202.0  
-    ##  Median :0.0568708   Median :0.299   Median :319.0  
-    ##  Mean   :0.1008132   Mean   :0.320   Mean   :342.3  
-    ##  3rd Qu.:0.1408586   3rd Qu.:0.365   3rd Qu.:452.0  
-    ##  Max.   :0.5446429   Max.   :0.666   Max.   :991.0  
+    ##       hff                 FWHM             sn        
+    ##  Min.   :0.0004123   Min.   :0.117   Min.   :  19.0  
+    ##  1st Qu.:0.0247974   1st Qu.:0.252   1st Qu.: 204.0  
+    ##  Median :0.0568708   Median :0.299   Median : 321.0  
+    ##  Mean   :0.1008132   Mean   :0.320   Mean   : 346.1  
+    ##  3rd Qu.:0.1408586   3rd Qu.:0.365   3rd Qu.: 457.0  
+    ##  Max.   :0.5446429   Max.   :0.666   Max.   :1100.0  
     ##  NA's   :3           NA's   :3       NA's   :3
 
 ### Distribution of HFF
@@ -154,11 +156,13 @@ HAT hepatic fat study
 ## Notes
 
 - Zoom meeting on 1/23/2025 (KL/GS/CH/KO)
-  - S/N = -1 indicates invalid values?
+  - ~~S/N = -1 indicates invalid values?~~
 
-    - Kristie can look up PIDs of those subjects
-    - Dr. Barnes can look into those images to check if HFF values make
-      sense
+    - ~~Kristie can look up PIDs of those subjects~~
+    - ~~Dr. Barnes can look into those images to check if HFF values
+      make sense~~
+    - **\[Updated\]** The issue of S/N = -1 has been corrected – see the
+      email correspondence on 1/27/25
 
   - It is plausible to see changes of HFF \> 0.2 according to Dr. Barnes
 
@@ -178,8 +182,7 @@ HAT hepatic fat study
       - Want to identify those overeating
 
   - KO to proceed analysis without excluding potential outliers for now
-
-    - Can exclude any outliers later
+    – Can exclude any outliers later
 
   - KL to communicate with Dr. Barnes
 

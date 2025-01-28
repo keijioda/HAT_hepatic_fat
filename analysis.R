@@ -57,7 +57,8 @@ randdate <- read_csv("./data/HAT_KeyVariables.csv") %>%
 # MRI measurement of hepatic fat
 # n obs = 1932
 # n distinct = 1008
-hfat <- read_csv("./data/HAT_HFF.csv") %>% 
+# hfat <- read_csv("./data/HAT_HFF.csv") %>% 
+hfat <- read_csv("./data/HAT_HFF_SN_fixed.csv") %>% 
   mutate(mridate = as.Date(mridate, format = "%d%b%y")) %>% 
   inner_join(randdate, by = "pid") %>% 
   mutate(prepost = ifelse(mridate <= d_randomized, 0, 1))
@@ -132,8 +133,6 @@ hfat %>%
   select(hff, FWHM, sn) %>%
   # mutate(hff = hff * 100) %>% 
   summary()
-
-hfat %>% filter(sn < 0)
 
 hfat %>% 
   filter(is.na(hff))
@@ -217,7 +216,6 @@ hfat_wide %>%
   
 # SN: Higher SN is good, lower FWHM is good
 summary(hfat$sn)
-hfat %>% filter(sn < 0)
 
 hfat %>% 
   ggplot(aes(x = sn)) +
@@ -237,7 +235,7 @@ hfat %>%
 p <- hfat %>% 
   ggplot(aes(x = sn, y = FWHM)) +
   geom_point(color = "black") +
-  geom_point(data = hfat[hfat$sn < 0,], aes(x = sn, y = FWHM), color = "red") +
+  # geom_point(data = hfat[hfat$sn < 0,], aes(x = sn, y = FWHM), color = "red") +
   labs(x = "S/N")
 
 ggMarginal(p, type = "histogram")
