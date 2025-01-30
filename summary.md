@@ -16,13 +16,20 @@ HAT hepatic fat study
   - The file is in long format, having up to 2 MRI measurements per
     subject: n obs = 1932
 
-- A SAS data file `final_n961_foodgroups_june2024.sas7bdat`
+- Demographic data: A SAS data file
+  `final_n961_foodgroups_june2024.sas7bdat`
 
   - n = 961
   - Includes demographics (age, gender, race, education), BMI, and some
     dietary data
 
-## Data check on hepatic fat data
+- Dietary data: A CSV file `HAT_GL_GI_by_FG_updated_080224.csv`
+
+  - n.obs = 2845 from n = 961 distinct PIDs
+  - Include glycemic load/index from various food groups by subject and
+    visit
+
+## Data check on hepatic fat
 
 - The hepatic fat data file `HAT_HFF.csv` includes 1932 MRI measurements
   from 1008 distinct PIDs
@@ -53,7 +60,7 @@ HAT hepatic fat study
   - ~~Note the negative value of -1 on S/N ratio – what does this
     indicate? **\[Clarify\]**~~
   - ~~There are 7 MRI measurements that have a value `-1` on S/N ratio~~
-  - The issue of S/N = -1 has been corrected – see the email
+  - The issue of S/N = -1 has been resolved – see the email
     correspondence on 1/27/25
 
 <!-- -->
@@ -153,6 +160,46 @@ HAT hepatic fat study
   - If MRI measurements of S/N \< 100 and FWHM \> 0.6 were removed, the
     correlation slightly reduced to r = 0.31
 
+## Exploratory analysis on HFF vs GL/GI
+
+- Based on dietary data, total GL/GI intake was calculated for each
+  visit and then averaged for each subject
+- After merging with demographic data and HFF data, there were n = 909
+  subjects
+  - This excludes those who had 2 MRIs after randomization and those who
+    had only baseline MRIs
+- Descriptive statistics on hepatic fat fraction (post-intervention
+  only), GL and GI are shown below:
+
+<!-- -->
+
+    ##     hff_Post              GL                GI        
+    ##  Min.   :0.001236   Min.   :  6.659   Min.   : 257.7  
+    ##  1st Qu.:0.026468   1st Qu.: 75.696   1st Qu.: 952.8  
+    ##  Median :0.058292   Median :103.356   Median :1209.4  
+    ##  Mean   :0.103458   Mean   :107.910   Mean   :1256.9  
+    ##  3rd Qu.:0.147769   3rd Qu.:133.676   3rd Qu.:1523.2  
+    ##  Max.   :0.544643   Max.   :350.114   Max.   :3191.7
+
+- Histograms of HFF, GL and GI are shown below
+  - Note that the distribution of HFF is highly right-skewed
+  - When HFF is used as the dependent variable, this will be
+    log-transformed
+  - **\[Clarify\]** There are some GL values \> 300 and GI values
+    \> 3000. Are these values plausible?
+
+![](summary_files/figure-gfm/hff_gl_gi_histograms-1.png)<!-- -->
+
+- Scatterplots between HFF (post-intervention) and GL/GI are shown below
+  - These plots are exploratory and not adjusted for any covariates
+  - The y-axis (HFF) is on the log scale
+  - A smoothed trend is overlayed for each plot
+    - Please ignore the tail region of GL/GI where data are sparse and
+      the confidence interval is wide
+    - No apparent relationship with HFF
+
+![](summary_files/figure-gfm/hff_gl_gi_scatter-1.png)<!-- -->
+
 ## Notes
 
 - Zoom meeting on 1/23/2025 (KL/GS/CH/KO)
@@ -161,7 +208,7 @@ HAT hepatic fat study
     - ~~Kristie can look up PIDs of those subjects~~
     - ~~Dr. Barnes can look into those images to check if HFF values
       make sense~~
-    - **\[Updated\]** The issue of S/N = -1 has been corrected – see the
+    - **\[Updated\]** The issue of S/N = -1 has been resolved – see the
       email correspondence on 1/27/25
 
   - It is plausible to see changes of HFF \> 0.2 according to Dr. Barnes

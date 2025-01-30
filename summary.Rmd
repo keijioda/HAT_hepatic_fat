@@ -22,11 +22,15 @@ sapply(pacs, require, character.only = TRUE)
   * `sn`: Signal/noise ratio, higher the better
   * The file is in long format, having up to 2 MRI measurements per subject: n obs = 1932
   
-* A SAS data file `final_n961_foodgroups_june2024.sas7bdat`
+* Demographic data: A SAS data file `final_n961_foodgroups_june2024.sas7bdat`
   * n = 961
   * Includes demographics (age, gender, race, education), BMI, and some dietary data
 
-## Data check on hepatic fat data
+* Dietary data: A CSV file `HAT_GL_GI_by_FG_updated_080224.csv`
+  * n.obs = 2845 from n = 961 distinct PIDs
+  * Include glycemic load/index from various food groups by subject and visit
+  
+## Data check on hepatic fat
 
 ```{r read_hff, echo = FALSE, warning = FALSE, message = FALSE}
 # Date randomized
@@ -72,7 +76,7 @@ n_MRI <- hfat %>%
     * Its distribution appears to be very right-skewed
   * ~~Note the negative value of -1 on S/N ratio -- what does this indicate? **[Clarify]**~~
   * ~~There are 7 MRI measurements that have a value `-1` on S/N ratio~~
-  * The issue of S/N = -1 has been corrected -- see the email correspondence on 1/27/25
+  * The issue of S/N = -1 has been resolved -- see the email correspondence on 1/27/25
 
 ```{r hff_descriptive, echo = FALSE}
 hfat %>% 
@@ -205,13 +209,106 @@ ggMarginal(test, type = "histogram")
 * The Pearson correlation coefficient between BMI and HFF (both log-scale) was r = 0.32
   * If MRI measurements of S/N < 100 and FWHM > 0.6 were removed, the correlation slightly reduced to r = 0.31
 
+## Exploratory analysis on HFF vs GL/GI
+
+* Based on dietary data, total GL/GI intake was calculated for each visit and then averaged for each subject
+* After merging with demographic data and HFF data, there were n = 909 subjects
+  * This excludes those who had 2 MRIs after randomization and those who had only baseline MRIs
+
+* Descriptive statistics on hepatic fat fraction (post-intervention only), GL and GI are shown below:
+
+```{r hff_gl_gi_summary, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Dietary data ------------------------------------------------------------
+
+# Subjects: n = 961
+diet <- read_csv("./data/HAT_GL_GI_by_FG_updated_080224.csv")
+
+# GL variables
+GL_vars <- names(diet) %>% grep("_GL", ., value = TRUE)
+
+# GI variables
+GI_vars <- names(diet) %>% grep("_GI", ., value = TRUE)
+
+# Average GL/GI by PID
+glgi <- diet %>% 
+  mutate(GL = rowSums(across(all_of(GL_vars)))) %>% 
+  mutate(GI = rowSums(across(all_of(GI_vars)))) %>%
+  group_by(cpartid) %>% 
+  summarize(GL = mean(GL), GI = mean(GI)) %>% 
+  rename(pid = cpartid)
+
+# Inner-join yields n = 955 subjects
+# There are 46 PIDs whose HFF post is missing
+# After removing these, n = 909 subjects
+df <- demog %>% 
+  inner_join(glgi) %>% 
+  inner_join(hfat_wide) %>% 
+  filter(!is.na(hff_Post))
+
+df %>% 
+  select(hff_Post, GL, GI) %>% 
+  summary()
+```
+
+* Histograms of HFF, GL and GI are shown below
+  * Note that the distribution of HFF is highly right-skewed
+  * When HFF is used as the dependent variable, this will be log-transformed
+  * **[Clarify]** There are some GL values > 300 and GI values > 3000. Are these values plausible? 
+  
+```{r hff_gl_gi_histograms, echo = FALSE, warning = FALSE, message = FALSE, fig.width = 15, fig.height = 5}
+hist_hff <- df %>% 
+  ggplot(aes(x = hff_Post)) + 
+  geom_histogram() +
+  labs(x = "Hepatic fat fraction (post-intervention)")
+
+hist_gl <- df %>% 
+  ggplot(aes(x = GL)) + 
+  geom_histogram() +
+  labs(x = "Glycemic load")
+
+hist_gi <- df %>% 
+  ggplot(aes(x = GI)) + 
+  geom_histogram() +
+  labs(x = "Glycemic index")
+
+hist_hff + hist_gl + hist_gi
+```
+
+* Scatterplots between HFF (post-intervention) and GL/GI are shown below
+  * These plots are exploratory and not adjusted for any covariates
+  * The y-axis (HFF) is on the log scale
+  * A smoothed trend is overlaid for each plot
+    * Please ignore the tail region of GL/GI where data are sparse and the confidence interval is wide
+    * No apparent relationship with HFF (again, unadjusted)
+  
+```{r hff_gl_gi_scatter, echo = FALSE, warning = FALSE, message = FALSE, fig.width = 10, fig.height = 5}
+scatter_HFF_GL <- df %>% 
+  ggplot(aes(x = GL, y = hff_Post)) +
+  geom_point() +
+  geom_smooth(span = 0.9) +
+  scale_y_continuous(trans = "log10") +
+  labs(x = "Glycemic load", y = "Hepatic fat fraction (log-scale)") +
+  theme(legend.position = "bottom")
+
+scatter_HFF_GI <- df %>% 
+  ggplot(aes(x = GI, y = hff_Post)) +
+  geom_point() +
+  geom_smooth(span = 0.95) +
+  scale_y_continuous(trans = "log10") +
+  labs(x = "Glycemic index", y = "Hepatic fat fraction (log-scale)") +
+  theme(legend.position = "bottom")
+
+scatter_HFF_GL + scatter_HFF_GI
+```
+
 ## Notes
 
 * Zoom meeting on 1/23/2025 (KL/GS/CH/KO)
   * ~~S/N = -1 indicates invalid values?~~ 
     * ~~Kristie can look up PIDs of those subjects~~
     * ~~Dr. Barnes can look into those images to check if HFF values make sense~~
-    * **[Updated]** The issue of S/N = -1 has been corrected -- see the email correspondence on 1/27/25
+    * **[Updated]** The issue of S/N = -1 has been resolved -- see the email correspondence on 1/27/25
   
   * It is plausible to see changes of HFF > 0.2 according to Dr. Barnes
     * Dig into past literature with similar intervention as well?

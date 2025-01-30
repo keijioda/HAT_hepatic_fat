@@ -25,7 +25,7 @@ demog %>%
   tally() %>% 
   mutate(pct = n / sum(n) * 100)
 
-# Sex
+# Sex: 0 = Female, 1 = Male
 demog %>%
   group_by(sex) %>% 
   tally() %>% 
@@ -41,10 +41,35 @@ demog %>%
   tally() %>% 
   mutate(pct = n / sum(n) * 100)
 
+demog %>% 
+  select(starts_with("Educ"), Edu_New)
+
 # BMI: 20 to 60
 summary(demog$bmi)
 demog %>% ggplot(aes(x = bmi)) + geom_histogram()
 
+# Race/Ethnicity
+demog %>% 
+  select(starts_with("Race"))
+
+demog %>% 
+  group_by(hispanic) %>% 
+  tally()
+
+# Race_New
+# 1: AA
+# 4: White
+# 5: Asian
+# 6: Other
+# 7: Mixed
+demog %>% 
+  group_by(Race_New) %>% 
+  tally() %>% 
+  mutate(pct = n / sum(n) * 100)
+
+demog %>% 
+  select(starts_with("Race")) %>% 
+  filter(Race_New == 5)
 
 # Hepatic fat measurements ------------------------------------------------
 
@@ -262,6 +287,7 @@ hfat %>%
 # Subjects: n = 961
 diet <- read_csv("./data/HAT_GL_GI_by_FG_updated_080224.csv")
 n_distinct(diet$cpartid)
+nrow(diet)
 
 # GL variables
 GL_vars <- names(diet) %>% grep("_GL", ., value = TRUE)
@@ -269,13 +295,13 @@ GL_vars <- names(diet) %>% grep("_GL", ., value = TRUE)
 # GI variables
 GI_vars <- names(diet) %>% grep("_GI", ., value = TRUE)
 
+# Average GL/GI by PID
 glgi <- diet %>% 
   mutate(GL = rowSums(across(all_of(GL_vars)))) %>% 
   mutate(GI = rowSums(across(all_of(GI_vars)))) %>%
   group_by(cpartid) %>% 
   summarize(GL = mean(GL), GI = mean(GI)) %>% 
   rename(pid = cpartid)
-
 
 # Merge data --------------------------------------------------------------
 
@@ -326,16 +352,18 @@ hfat2 %>%
   mutate(bmi = log(bmi), hff = log(hff)) %>% 
   cor(use = "pairwise")
 
-
 demog %>% 
   mutate(bmi = log(bmi)) %>%
   ggplot(aes(x = bmi)) +
   geom_histogram()
 
 # Inner-join yields n = 955 subjects
+# There are 46 PIDs whose HFF post is missing
+# After removing these, n = 909 subjects
 df <- demog %>% 
   inner_join(glgi) %>% 
-  inner_join(hfat_wide)
+  inner_join(hfat_wide) %>% 
+  filter(!is.na(hff_Post))
 
 df %>% 
   ggplot(aes(x = hff_Post)) +
@@ -346,18 +374,50 @@ df %>%
   geom_histogram() +
   scale_x_continuous(trans = "log10")
 
-names(demog)
-
 
 # Exploratory analysis ----------------------------------------------------
 
+# Descriptive stats
 df %>% 
+  select(hff_Post, GL, GI) %>% 
+  summary()
+
+# Histograms
+hist_hff <- df %>% 
+  ggplot(aes(x = hff_Post)) + 
+  geom_histogram() +
+  labs(x = "Hepatic fat fraction (post-intervention)")
+
+hist_gl <- df %>% 
+  ggplot(aes(x = GL)) + 
+  geom_histogram() +
+  labs(x = "Glycemic load")
+
+hist_gi <- df %>% 
+  ggplot(aes(x = GI)) + 
+  geom_histogram() +
+  labs(x = "Glycemic index")
+
+library(patchwork)
+hist_hff + hist_gl + hist_gi
+
+scatter_HFF_GL <- df %>% 
   ggplot(aes(x = GL, y = hff_Post)) +
   geom_point() +
-  geom_smooth() +
+  geom_smooth(span = 0.9) +
   scale_y_continuous(trans = "log10") +
-  # facet_wrap(~ sex) +
+  labs(x = "Glycemic load", y = "Hepatic fat fraction (log-scale)") +
   theme(legend.position = "bottom")
+
+scatter_HFF_GI <- df %>% 
+  ggplot(aes(x = GI, y = hff_Post)) +
+  geom_point() +
+  geom_smooth(span = 0.95) +
+  scale_y_continuous(trans = "log10") +
+  labs(x = "Glycemic index", y = "Hepatic fat fraction (log-scale)") +
+  theme(legend.position = "bottom")
+
+scatter_HFF_GL + scatter_HFF_GI
 
 df %>% 
   mutate(hff_diff = hff_Post - hff_Pre) %>% 
