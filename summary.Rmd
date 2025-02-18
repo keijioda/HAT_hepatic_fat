@@ -189,7 +189,14 @@ ggMarginal(p, type = "histogram")
 
 ```{r hff_bmi_scatter, echo = FALSE, warning = FALSE, message = FALSE, fig.width = 5, fig.height = 5}
 # Subjects: n = 961
-demog <- read_sas("./data/final_n961_foodgroups_june2024.sas7bdat")
+demog <- read_sas("./data/final_n961_foodgroups_june2024.sas7bdat") %>% 
+  mutate(SexM  = factor(sex, labels = c("F", "M"))) %>% 
+  mutate(Trt   = factor(randarm, labels = c("Cntrl", "Avocado"))) %>% 
+  mutate(Educ3 = factor(Edu_New, labels = c("LTCollege", "College", "Postgrad"))) %>% 
+  mutate(Race2 = factor(Race_New, labels = c("NonWhite", "White", "NonWhite", "NonWhite", "NonWhite")),
+         Race2 = relevel(Race2, "White"),
+         Race3 = factor(Race_New, labels = c("AA", "White", "Other", "Other", "Other")),
+         Race3 = relevel(Race3, "White"))
 
 hfat2 <- hfat %>% 
   left_join(demog %>% select(pid, bmi), by = "pid")
@@ -212,15 +219,12 @@ ggMarginal(test, type = "histogram")
 ## Exploratory analysis on HFF vs GL/GI
 
 * Based on dietary data, total GL/GI intake was calculated for each visit and then averaged for each subject
-* After merging with demographic data and HFF data, there were n = 909 subjects
-  * This excludes those who had 2 MRIs after randomization and those who had only baseline MRIs
+* After merging with demographic data and HFF data, there were n = 903 subjects
+  * This excludes those who had 2 MRIs after randomization and those missing either pre/post-intervention MRIs or both
 
 * Descriptive statistics on hepatic fat fraction (post-intervention only), GL and GI are shown below:
 
 ```{r hff_gl_gi_summary, echo = FALSE, warning = FALSE, message = FALSE}
-
-# Dietary data ------------------------------------------------------------
-
 # Subjects: n = 961
 diet <- read_csv("./data/HAT_GL_GI_by_FG_updated_080224.csv")
 
@@ -238,13 +242,21 @@ glgi <- diet %>%
   summarize(GL = mean(GL), GI = mean(GI)) %>% 
   rename(pid = cpartid)
 
+# Using SPSS data file: n = 1008
+diet_other <- read_spss("./data/mean intake of selected nutriient covariates.sav")
+
+glgi2 <- glgi %>% 
+  inner_join(diet_other, by = "pid")
+
 # Inner-join yields n = 955 subjects
 # There are 46 PIDs whose HFF post is missing
-# After removing these, n = 909 subjects
+# There are  6 PIDs whose HFF pre  is missing
+# After removing these, n = 903 subjects
 df <- demog %>% 
-  inner_join(glgi) %>% 
+  inner_join(glgi2) %>% 
   inner_join(hfat_wide) %>% 
-  filter(!is.na(hff_Post))
+  filter(!is.na(hff_Post)) %>% 
+  filter(!is.na(hff_Pre)) 
 
 df %>% 
   select(hff_Post, GL, GI) %>% 
@@ -300,6 +312,72 @@ scatter_HFF_GI <- df %>%
   theme(legend.position = "bottom")
 
 scatter_HFF_GL + scatter_HFF_GI
+```
+
+## Regression models of HFF on GL
+
+* Regression models were run using log(HFF) as the dependent variable and glycemic load (GL) as an independent variable of interest.
+  * Because of its highly right-skewed distribution, HFF was log-transformed
+  * GL values were divided by 10 (labelled as "GL/10" in the table below). Thus, its beta estimate is interpreted as a change in log(HFF) for a 10-unit change in GL. 
+
+* Model 1 (or "base" model) below adjusts for basic demographic variables: gender, age, race (NH White/rest), education (less than college, college degree, postgraduate degree)
+  * There was a significant positive association between HFF and GL. A 10-unit increment in GL gives a corresponding increment of HFF by 1.6% (i.e., $exp(0.016) = 1.016$ or 1.6% increase)
+  * Males' HFF values were significantly higher than females by 68% ($exp(0.520) = 1.68$)
+  * Non-Whites had significantly lower HFF value than White ($exp(-0.185) = 0.83$ or 17% lower)
+  * Education was negatively associated with HFF
+  
+* Model 2 also included Group (control/avocado) and its interaction with GL. This is to assess whether the relationship between GL and HFF may be different between the two groups
+  * The beta coefficient for GL was attenuated and became non-significant
+  * Both Group and its interaction with GL were not significant at all, indicating that the relationship between HFF and GL did not differ between the two groups.
+  
+* In Model 3, BMI was added to the base model.
+  * BMI was significantly positively associated with HFF. A 1-unit increment of BMI corresponds to an increase of HFF by 6% (i.e., $exp(0.059) = 1.061$ or 6% increase)
+  * The beta coefficient for GL was attenuated and became non-significant after adding BMI into the base model
+
+```{r gl_models, echo = FALSE, warning = FALSE, message = FALSE}
+library(gtsummary)
+
+# Change units
+df_mod <- df %>% 
+  mutate(GL10 = GL / 10,
+         GI100 = GI / 100,
+         kcal100 = kcal / 100)
+
+# Both control and intervention
+fit_gl <- lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3, data = df_mod)
+
+# Base model with demographics
+var_labs <- list(GL10 = "GL/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+
+t1 <- tbl_regression(fit_gl, 
+               label = var_labs,
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + trt and its interaction with GL
+t2 <- update(fit_gl, .~. + Trt + Trt * GL10) %>%
+  tbl_regression(label = c(var_labs, Trt = "Group"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t3 <- update(fit_gl, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge(tbls = list(t1, t2, t3),
+          tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**") %>% 
+  as_gt()
+
 ```
 
 ## Notes

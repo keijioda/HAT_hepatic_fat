@@ -11,7 +11,14 @@ sapply(pacs, require, character.only = TRUE)
 # Subject demographics ----------------------------------------------------
 
 # Subjects: n = 961
-demog <- read_sas("./data/final_n961_foodgroups_june2024.sas7bdat")
+demog <- read_sas("./data/final_n961_foodgroups_june2024.sas7bdat") %>% 
+  mutate(SexM  = factor(sex, labels = c("F", "M"))) %>% 
+  mutate(Trt   = factor(randarm, labels = c("Cntrl", "Avocado"))) %>% 
+  mutate(Educ3 = factor(Edu_New, labels = c("LTCollege", "College", "Postgrad"))) %>% 
+  mutate(Race2 = factor(Race_New, labels = c("NonWhite", "White", "NonWhite", "NonWhite", "NonWhite")),
+         Race2 = relevel(Race2, "White"),
+         Race3 = factor(Race_New, labels = c("AA", "White", "Other", "Other", "Other")),
+         Race3 = relevel(Race3, "White"))
 demog
 
 names(demog)
@@ -25,9 +32,19 @@ demog %>%
   tally() %>% 
   mutate(pct = n / sum(n) * 100)
 
+demog %>%
+  group_by(Trt) %>% 
+  tally() %>% 
+  mutate(pct = n / sum(n) * 100)
+
 # Sex: 0 = Female, 1 = Male
 demog %>%
   group_by(sex) %>% 
+  tally() %>% 
+  mutate(pct = n / sum(n) * 100)
+
+demog %>%
+  group_by(SexM) %>% 
   tally() %>% 
   mutate(pct = n / sum(n) * 100)
 
@@ -41,8 +58,10 @@ demog %>%
   tally() %>% 
   mutate(pct = n / sum(n) * 100)
 
-demog %>% 
-  select(starts_with("Educ"), Edu_New)
+demog %>%
+  group_by(Educ3) %>% 
+  tally() %>% 
+  mutate(pct = n / sum(n) * 100)
 
 # BMI: 20 to 60
 summary(demog$bmi)
@@ -68,8 +87,14 @@ demog %>%
   mutate(pct = n / sum(n) * 100)
 
 demog %>% 
-  select(starts_with("Race")) %>% 
-  filter(Race_New == 5)
+  group_by(Race2) %>% 
+  tally() %>% 
+  mutate(pct = n / sum(n) * 100)
+
+demog %>% 
+  group_by(Race3) %>% 
+  tally() %>% 
+  mutate(pct = n / sum(n) * 100)
 
 # Hepatic fat measurements ------------------------------------------------
 
@@ -303,6 +328,21 @@ glgi <- diet %>%
   summarize(GL = mean(GL), GI = mean(GI)) %>% 
   rename(pid = cpartid)
 
+# Dietary data for covariate from GS --------------------------------------
+
+# Using SPSS data file: n = 1008
+diet_other <- read_spss("./data/mean intake of selected nutriient covariates.sav")
+nrow(diet_other)
+names(diet_other)
+
+# When merged with GL/GI data, n = 961
+diet_other %>% semi_join(diet, by = c("pid" = "cpartid")) %>% nrow()
+
+glgi2 <- glgi %>% 
+  inner_join(diet_other, by = "pid")
+
+glgi2 %>% summary()
+
 # Merge data --------------------------------------------------------------
 
 hfat2 <- hfat %>% 
@@ -359,11 +399,17 @@ demog %>%
 
 # Inner-join yields n = 955 subjects
 # There are 46 PIDs whose HFF post is missing
-# After removing these, n = 909 subjects
+# There are  6 PIDs whose HFF pre  is missing
+# After removing these, n = 903 subjects
 df <- demog %>% 
-  inner_join(glgi) %>% 
+  inner_join(glgi2) %>% 
   inner_join(hfat_wide) %>% 
-  filter(!is.na(hff_Post))
+  filter(!is.na(hff_Post)) %>% 
+  filter(!is.na(hff_Pre))
+
+df %>% 
+  select(hff_Pre, hff_Post) %>% 
+  summary()
 
 df %>% 
   ggplot(aes(x = hff_Post)) +
@@ -374,6 +420,25 @@ df %>%
   geom_histogram() +
   scale_x_continuous(trans = "log10")
 
+df %>% 
+  ggplot(aes(x = kcal)) +
+  geom_histogram() +
+  scale_x_continuous(trans = "log10")
+
+df %>% 
+  ggplot(aes(x = SFA)) +
+  geom_histogram() +
+  scale_x_continuous(trans = "log10")
+
+df %>% 
+  ggplot(aes(x = addsugar)) +
+  geom_histogram() +
+  scale_x_continuous(trans = "log10")
+
+# SFA, addsugar, availcarb
+df %>% 
+  select(SFA, addsugar, availcarb) %>% 
+  summary()
 
 # Exploratory analysis ----------------------------------------------------
 
@@ -427,14 +492,67 @@ df %>%
   geom_smooth() 
 
 # Linear models -----------------------------------------------------------
+library(gtsummary)
 
-fit_gl <- lm(log(hff_Post) ~ GL + sex + age + randarm + log(hff_Pre), data = df)
+# Change units
+df_mod <- df %>% 
+  mutate(GL10 = GL / 10,
+         GI100 = GI / 100,
+         kcal100 = kcal / 100)
+
+# Both control and intervention
+fit_gl <- lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3, data = df_mod)
 summary(fit_gl)
-
 resid_panel(fit_gl, plots="all")
 
-fit_gl <- lm(log(hff_Post) ~ sex + age + GL, data = df)
-summary(fit_gl)
+var_labs <- list(GL10 = "GL/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
 
-resid_panel(fit_gl, plots="all")
+# Base model with demographics
+t1 <- tbl_regression(fit_gl, 
+               label = var_labs,
+               estimate_fun = label_style_number(digits = 4),
+               pvalue_fun   = label_style_pvalue(digits = 4)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
 
+# Base + trt and its interaction with GL
+t2 <- update(fit_gl, .~. + Trt + Trt * GL10) %>%
+  tbl_regression(label = c(var_labs, Trt = "Group"),
+                 estimate_fun = label_style_number(digits = 4),
+                 pvalue_fun = label_style_pvalue(digits = 4)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t3 <- update(fit_gl, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 4),
+                 pvalue_fun = label_style_pvalue(digits = 4)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
+                        tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**")
+
+
+
+names(diet_other)
+
+update(fit_gl, .~. + kcal100 + pcten_SFA) %>% summary()
+update(fit_gl, .~. + bmi) %>% summary()
+
+# Control group only
+df_mod %>%
+  filter(Trt == "Cntrl") %>% 
+  lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3, data = .) %>% 
+  summary()
+
+df_mod %>% group_by(Trt) %>% tally()
+
+fit_gi <- lm(log(hff_Post) ~ I(GI/100) + SexM + age + Race2 + Educ3, data = df)
+summary(fit_gi)
+resid_panel(fit_gi, plots="all")
+
+update(fit_gi, .~. + bmi) %>% summary()
