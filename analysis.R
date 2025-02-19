@@ -485,11 +485,109 @@ scatter_HFF_GI <- df %>%
 scatter_HFF_GL + scatter_HFF_GI
 
 df %>% 
+  ggplot(aes(x = hff_Pre, y = hff_Post, color = Trt)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_x_continuous(trans = "log10") +
+  scale_y_continuous(trans = "log10")
+
+cor.test(df$hff_Pre, df$hff_Post, method = "pearson")
+cor.test(df$hff_Pre, df$hff_Post, method = "spearman")
+
+df %>% 
+  select(Trt, hff_Pre, hff_Post) %>% 
+  group_by(Trt) %>% 
+  summarize(mean_hff_pre = mean(hff_Pre), mean_hff_post = mean(hff_Post),)
+
+df %>% 
+  select(Trt, hff_Pre, hff_Post) %>% 
+  group_by(Trt) %>% 
+  summarize(median_hff_pre = median(hff_Pre), median_hff_post = median(hff_Post),)
+
+df %>% 
+  mutate(hff_diff = hff_Post - hff_Pre) %>% 
+  group_by(Trt) %>% 
+  summarize(mean_change = mean(hff_diff))
+
+df %>% 
   mutate(hff_diff = hff_Post - hff_Pre) %>% 
   ggplot(aes(x = GL, y = hff_diff)) +
   # ggplot(aes(x = GL, y = hff_diff, color = factor(randarm))) +
   geom_point() +
-  geom_smooth() 
+  geom_smooth()
+  # geom_smooth(method = lm) 
+
+df %>% 
+  mutate(hff_diff = hff_Post - hff_Pre) %>% 
+  ggplot(aes(x = GL, y = hff_diff, color = Trt)) +
+  geom_point() +
+  geom_smooth(method = "lm") 
+
+df %>% 
+  mutate(hff_diff = hff_Post - hff_Pre) %>% 
+  ggplot(aes(x = GL, y = hff_diff, color = Trt)) +
+  geom_boxplot()
+
+
+# Dietary variables
+df %>% 
+  select(kcal, SFA, addsugar, availcarb) %>% 
+  summary()
+
+df %>% 
+  select(pid, kcal, SFA, addsugar, availcarb) %>% 
+  pivot_longer(2:5, names_to = "nutr", values_to = "value") %>% 
+  mutate(nutr = factor(nutr, levels = c("kcal", "SFA", "addsugar", "availcarb"))) %>% 
+  ggplot(aes(x = value)) +
+  geom_histogram() +
+  facet_wrap(~nutr, scales = "free")
+
+df %>% 
+  select(pid, kcal, SFA, addsugar, availcarb) %>% 
+  filter(kcal > 4000) %>% 
+  arrange(kcal)
+
+# Energy adjustment
+kcal_adjust <- function(data, var, energy, log=TRUE){
+  if (missing(var))
+    stop("Need to specify variable for energy-adjustment.")
+  if (missing(energy))
+    stop("Need to specify energy intake.")
+  if (missing(data))
+    stop("Need to specify a data frame.")
+  df <- eval(substitute(data.frame(y = data$var, ea_y = data$var, kcal = data$energy)))
+  count_negative <- sum(df$y < 0, na.rm=TRUE)
+  if (count_negative > 0)
+    warning("There are negative values in variable.")
+  if(log) df$y[df$y > 0 & !is.na(df$y)] <- log(df$y[df$y > 0 & !is.na(df$y)])
+  mod <- lm(y ~ kcal, data=df[df$y != 0, ])
+  if(log){
+    ea <- exp(resid(mod) + mean(df$y[df$y != 0], na.rm=TRUE))
+    df$ea_y[!is.na(df$y) & df$y != 0] <- ea
+  }
+  else{
+    ea <- resid(mod) + mean(df$y[df$y != 0], na.rm=TRUE)
+    df$ea_y[!is.na(df$y) & df$y != 0] <- ea
+  }
+  return(df$ea_y)
+}
+
+df$SFA_ea       <- kcal_adjust(SFA,       kcal, data = df, log = FALSE)
+df$addsugar_ea  <- kcal_adjust(addsugar,  kcal, data = df, log = FALSE)
+df$availcarb_ea <- kcal_adjust(availcarb, kcal, data = df, log = FALSE)
+
+cor(df$SFA_ea, df$addsugar_ea, df$availcarb_ea)
+df %>% 
+  select(SFA_ea, addsugar_ea, availcarb_ea) %>% 
+  cor()
+
+df %>% 
+  select(pid, kcal, SFA_ea, addsugar_ea, availcarb_ea) %>% 
+  pivot_longer(2:5, names_to = "nutr", values_to = "value") %>% 
+  mutate(nutr = factor(nutr, levels = c("kcal", "SFA_ea", "addsugar_ea", "availcarb_ea"))) %>% 
+  ggplot(aes(x = value)) +
+  geom_histogram() +
+  facet_wrap(~nutr, scales = "free")
 
 # Linear models -----------------------------------------------------------
 library(gtsummary)
@@ -503,6 +601,7 @@ df_mod <- df %>%
 # Model for GL
 # Both control and intervention
 fit_gl <- lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3, data = df_mod)
+# fit_gl <- lm(log(hff_Post) ~ GL10 + log(hff_Pre) + SexM + age + Race2 + Educ3, data = df_mod)
 summary(fit_gl)
 
 # Check model diagnosis
@@ -517,16 +616,25 @@ t1 <- tbl_regression(fit_gl,
                pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
-# Base + trt and its interaction with GL
-t2 <- update(fit_gl, .~. + Trt + Trt * GL10) %>%
-  tbl_regression(label = c(var_labs, Trt = "Group"),
+# # Base + trt and its interaction with GL
+# t2 <- update(fit_gl, .~. + Trt + Trt * GL10) %>%
+#   tbl_regression(label = c(var_labs, Trt = "Group"),
+#                  estimate_fun = label_style_number(digits = 3),
+#                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+#   add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t2 <- update(fit_gl, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
-# Base + BMI
-t3 <- update(fit_gl, .~. + bmi) %>%
-  tbl_regression(label = c(var_labs, bmi = "BMI"),
+# Base + dietary variables (including kcal) 
+t3 <- update(fit_gl, .~. + kcal100 + SFA_ea) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)",
+                           SFA_ea = "SFA, gram (energy-adjusted)"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
@@ -538,7 +646,6 @@ tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
                 p.value_1 = "**p**", 
                 p.value_2 = "**p**", 
                 p.value_3 = "**p**")
-
 
 update(fit_gl, .~. + kcal100 + pcten_SFA) %>% summary()
 
@@ -567,16 +674,25 @@ t1 <- tbl_regression(fit_gi,
                pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
-# Base + trt and its interaction with GI
-t2 <- update(fit_gi, .~. + Trt + Trt * GI100) %>%
-  tbl_regression(label = c(var_labs, Trt = "Group"),
+# # Base + trt and its interaction with GI
+# t2 <- update(fit_gi, .~. + Trt + Trt * GI100) %>%
+#   tbl_regression(label = c(var_labs, Trt = "Group"),
+#                  estimate_fun = label_style_number(digits = 3),
+#                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+#   add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t2 <- update(fit_gi, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
-# Base + BMI
-t3 <- update(fit_gi, .~. + bmi) %>%
-  tbl_regression(label = c(var_labs, bmi = "BMI"),
+# Base + dietary variables (including kcal) 
+t3 <- update(fit_gi, .~. + kcal100 + SFA_ea) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)",
+                           SFA_ea = "SFA, gram (energy-adjusted)"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)

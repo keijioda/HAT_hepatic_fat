@@ -202,8 +202,9 @@ HAT hepatic fat study
 
 ## Regression models of HFF on GL
 
-- Regression models were run using log(HFF) as the dependent variable
-  and glycemic load (GL) as an independent variable of interest.
+- Regression models were run using log(post HFF) as the dependent
+  variable and glycemic load (GL) as an independent variable of
+  interest.
   - Because of its highly right-skewed distribution, HFF was
     log-transformed
   - GL values were divided by 10 (labelled as “GL/10” in the table
@@ -220,27 +221,25 @@ HAT hepatic fat study
   - Non-Whites had significantly lower HFF value than White
     ($exp(-0.185) = 0.83$ or 17% lower)
   - Education was negatively associated with HFF
-- Model 2 also included Group (control/avocado) and its interaction with
-  GL. This is to assess whether the relationship between GL and HFF may
-  be different between the two groups
-  - The beta coefficient for GL was attenuated and became
-    non-significant
-  - Both Group and its interaction with GL were not significant at all,
-    indicating that the relationship between HFF and GL did not differ
-    between the two groups
-- In Model 3, BMI was added to the base model
+- In Model 2, BMI was added to the base model
   - BMI was significantly positively associated with HFF. A 1-unit
     increment of BMI corresponds to an increase of HFF by 6% (i.e.,
     $exp(0.059) = 1.061$ or 6% increase)
   - The beta coefficient for GL was attenuated and became
     non-significant after adding BMI into the base model
+- In Model 3, total energy (per 100 kcal) and SFA (gram,
+  energy-adjusted) was added to the base model
+  - Both kcal and SFA were not significantly associated with HFF
+  - Glycemic load was not significantly associated with HFF, after
+    further adjusting for kcal and SFA
 
-<img src="summary_files/figure-gfm/gl_models-1.png" width="1952" />
+<img src="summary_files/figure-gfm/gl_models-1.png" width="2077" />
 
 ## Regression models of HFF on GI
 
-- Regression models were run using log(HFF) as the dependent variable
-  and glycemic index (GI) as an independent variable of interest
+- Regression models were run using log(post HFF) as the dependent
+  variable and glycemic index (GI) as an independent variable of
+  interest
   - Again, HFF was log-transformed
   - GI values were divided by 100 (labelled as “GI/10” in the table
     below). Thus, its beta estimate is interpreted as a change in
@@ -249,7 +248,7 @@ HAT hepatic fat study
   - In all models, glycemic index was not significantly associated with
     HFF
 
-<img src="summary_files/figure-gfm/gi_models-1.png" width="1960" />
+<img src="summary_files/figure-gfm/gi_models-1.png" width="2077" />
 
 ## Notes
 

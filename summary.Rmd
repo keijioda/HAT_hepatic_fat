@@ -258,6 +258,35 @@ df <- demog %>%
   filter(!is.na(hff_Post)) %>% 
   filter(!is.na(hff_Pre)) 
 
+# Energy adjustment
+kcal_adjust <- function(data, var, energy, log=TRUE){
+  if (missing(var))
+    stop("Need to specify variable for energy-adjustment.")
+  if (missing(energy))
+    stop("Need to specify energy intake.")
+  if (missing(data))
+    stop("Need to specify a data frame.")
+  df <- eval(substitute(data.frame(y = data$var, ea_y = data$var, kcal = data$energy)))
+  count_negative <- sum(df$y < 0, na.rm=TRUE)
+  if (count_negative > 0)
+    warning("There are negative values in variable.")
+  if(log) df$y[df$y > 0 & !is.na(df$y)] <- log(df$y[df$y > 0 & !is.na(df$y)])
+  mod <- lm(y ~ kcal, data=df[df$y != 0, ])
+  if(log){
+    ea <- exp(resid(mod) + mean(df$y[df$y != 0], na.rm=TRUE))
+    df$ea_y[!is.na(df$y) & df$y != 0] <- ea
+  }
+  else{
+    ea <- resid(mod) + mean(df$y[df$y != 0], na.rm=TRUE)
+    df$ea_y[!is.na(df$y) & df$y != 0] <- ea
+  }
+  return(df$ea_y)
+}
+
+df$SFA_ea       <- kcal_adjust(SFA,       kcal, data = df, log = FALSE)
+df$addsugar_ea  <- kcal_adjust(addsugar,  kcal, data = df, log = FALSE)
+df$availcarb_ea <- kcal_adjust(availcarb, kcal, data = df, log = FALSE)
+
 df %>% 
   select(hff_Post, GL, GI) %>% 
   summary()
@@ -316,7 +345,7 @@ scatter_HFF_GL + scatter_HFF_GI
 
 ## Regression models of HFF on GL
 
-* Regression models were run using log(HFF) as the dependent variable and glycemic load (GL) as an independent variable of interest.
+* Regression models were run using log(post HFF) as the dependent variable and glycemic load (GL) as an independent variable of interest.
   * Because of its highly right-skewed distribution, HFF was log-transformed
   * GL values were divided by 10 (labelled as "GL/10" in the table below). Thus, its beta estimate is interpreted as a change in log(HFF) for a 10-unit change in GL. 
 
@@ -326,13 +355,13 @@ scatter_HFF_GL + scatter_HFF_GI
   * Non-Whites had significantly lower HFF value than White ($exp(-0.185) = 0.83$ or 17% lower)
   * Education was negatively associated with HFF
   
-* Model 2 also included Group (control/avocado) and its interaction with GL. This is to assess whether the relationship between GL and HFF may be different between the two groups
-  * The beta coefficient for GL was attenuated and became non-significant
-  * Both Group and its interaction with GL were not significant at all, indicating that the relationship between HFF and GL did not differ between the two groups
-  
-* In Model 3, BMI was added to the base model
+* In Model 2, BMI was added to the base model
   * BMI was significantly positively associated with HFF. A 1-unit increment of BMI corresponds to an increase of HFF by 6% (i.e., $exp(0.059) = 1.061$ or 6% increase)
   * The beta coefficient for GL was attenuated and became non-significant after adding BMI into the base model
+ 
+* In Model 3, total energy (per 100 kcal) and SFA (gram, energy-adjusted) was added to the base model
+  * Both kcal and SFA were not significantly associated with HFF
+  * Glycemic load was not significantly associated with HFF, after further adjusting for kcal and SFA
 
 ```{r gl_models, echo = FALSE, warning = FALSE, message = FALSE}
 # Change units
@@ -354,16 +383,18 @@ t1 <- tbl_regression(fit_gl,
                pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
-# Base + trt and its interaction with GL
-t2 <- update(fit_gl, .~. + Trt + Trt * GL10) %>%
-  tbl_regression(label = c(var_labs, Trt = "Group"),
+# Base + BMI
+t2 <- update(fit_gl, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
-# Base + BMI
-t3 <- update(fit_gl, .~. + bmi) %>%
-  tbl_regression(label = c(var_labs, bmi = "BMI"),
+# Base + dietary variables (including kcal) 
+t3 <- update(fit_gl, .~. + kcal100 + SFA_ea) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)",
+                           SFA_ea = "SFA, gram (energy-adjusted)"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
@@ -382,7 +413,7 @@ tbl_merge(tbls = list(t1, t2, t3),
 
 ## Regression models of HFF on GI
 
-* Regression models were run using log(HFF) as the dependent variable and glycemic index (GI) as an independent variable of interest
+* Regression models were run using log(post HFF) as the dependent variable and glycemic index (GI) as an independent variable of interest
   * Again, HFF was log-transformed
   * GI values were divided by 100 (labelled as "GI/10" in the table below). Thus, its beta estimate is interpreted as a change in log(HFF) for a 100-unit change in GI.
 
@@ -404,16 +435,18 @@ t1 <- tbl_regression(fit_gi,
                pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
-# Base + trt and its interaction with GI
-t2 <- update(fit_gi, .~. + Trt + Trt * GI100) %>%
-  tbl_regression(label = c(var_labs, Trt = "Group"),
+# Base + BMI
+t2 <- update(fit_gi, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
-# Base + BMI
-t3 <- update(fit_gi, .~. + bmi) %>%
-  tbl_regression(label = c(var_labs, bmi = "BMI"),
+# Base + dietary variables (including kcal) 
+t3 <- update(fit_gi, .~. + kcal100 + SFA_ea) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)",
+                           SFA_ea = "SFA, gram (energy-adjusted)"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
