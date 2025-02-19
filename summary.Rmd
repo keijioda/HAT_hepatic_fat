@@ -7,7 +7,7 @@ output: github_document
 # Setup -------------------------------------------------------------------
 
 # Required packages
-pacs <- c("tidyverse", "haven", "ggExtra", "ggResidpanel")
+pacs <- c("tidyverse", "haven", "ggExtra", "ggResidpanel", "gtsummary", "flextable")
 sapply(pacs, require, character.only = TRUE)
 
 ```
@@ -328,21 +328,20 @@ scatter_HFF_GL + scatter_HFF_GI
   
 * Model 2 also included Group (control/avocado) and its interaction with GL. This is to assess whether the relationship between GL and HFF may be different between the two groups
   * The beta coefficient for GL was attenuated and became non-significant
-  * Both Group and its interaction with GL were not significant at all, indicating that the relationship between HFF and GL did not differ between the two groups.
+  * Both Group and its interaction with GL were not significant at all, indicating that the relationship between HFF and GL did not differ between the two groups
   
-* In Model 3, BMI was added to the base model.
+* In Model 3, BMI was added to the base model
   * BMI was significantly positively associated with HFF. A 1-unit increment of BMI corresponds to an increase of HFF by 6% (i.e., $exp(0.059) = 1.061$ or 6% increase)
   * The beta coefficient for GL was attenuated and became non-significant after adding BMI into the base model
 
 ```{r gl_models, echo = FALSE, warning = FALSE, message = FALSE}
-library(gtsummary)
-
 # Change units
 df_mod <- df %>% 
   mutate(GL10 = GL / 10,
          GI100 = GI / 100,
          kcal100 = kcal / 100)
 
+# Model for GL
 # Both control and intervention
 fit_gl <- lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3, data = df_mod)
 
@@ -376,9 +375,60 @@ tbl_merge(tbls = list(t1, t2, t3),
                 p.value_1 = "**p**", 
                 p.value_2 = "**p**", 
                 p.value_3 = "**p**") %>% 
-  as_gt()
+  as_flex_table()
 
 ```
+
+
+## Regression models of HFF on GI
+
+* Regression models were run using log(HFF) as the dependent variable and glycemic index (GI) as an independent variable of interest
+  * Again, HFF was log-transformed
+  * GI values were divided by 100 (labelled as "GI/10" in the table below). Thus, its beta estimate is interpreted as a change in log(HFF) for a 100-unit change in GI.
+
+* Similarly to GL models, 3 models were run (see below)
+  * In all models, glycemic index was not significantly associated with HFF
+
+```{r gi_models, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Models for GI
+# Both control and intervention
+fit_gi <- lm(log(hff_Post) ~ GI100 + SexM + age + Race2 + Educ3, data = df_mod)
+
+# Base model with demographics
+var_labs <- list(GI100 = "GI/100", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+
+t1 <- tbl_regression(fit_gi, 
+               label = var_labs,
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + trt and its interaction with GI
+t2 <- update(fit_gi, .~. + Trt + Trt * GI100) %>%
+  tbl_regression(label = c(var_labs, Trt = "Group"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t3 <- update(fit_gi, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge(tbls = list(t1, t2, t3),
+          tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**") %>% 
+  as_flex_table()
+
+```
+
 
 ## Notes
 

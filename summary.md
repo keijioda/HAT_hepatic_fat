@@ -227,229 +227,29 @@ HAT hepatic fat study
     non-significant
   - Both Group and its interaction with GL were not significant at all,
     indicating that the relationship between HFF and GL did not differ
-    between the two groups.
-- In Model 3, BMI was added to the base model.
+    between the two groups
+- In Model 3, BMI was added to the base model
   - BMI was significantly positively associated with HFF. A 1-unit
     increment of BMI corresponds to an increase of HFF by 6% (i.e.,
     $exp(0.059) = 1.061$ or 6% increase)
   - The beta coefficient for GL was attenuated and became
     non-significant after adding BMI into the base model
 
-<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-  <thead>
-    <tr class="gt_col_headings gt_spanner_row">
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id="label"><span class='gt_from_md'><strong>Variable</strong></span></th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="3" scope="colgroup" id="**Model 1**">
-        <div class="gt_column_spanner"><span class='gt_from_md'><strong>Model 1</strong></span></div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="3" scope="colgroup" id="**Model 2**">
-        <div class="gt_column_spanner"><span class='gt_from_md'><strong>Model 2</strong></span></div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="3" scope="colgroup" id="**Model 3**">
-        <div class="gt_column_spanner"><span class='gt_from_md'><strong>Model 3</strong></span></div>
-      </th>
-    </tr>
-    <tr class="gt_col_headings">
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="estimate_1"><span class='gt_from_md'><strong>Beta</strong></span></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="conf.low_1"><span class='gt_from_md'><strong>95% CI</strong></span><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="p.value_1"><span class='gt_from_md'><strong>p</strong></span></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="estimate_2"><span class='gt_from_md'><strong>Beta</strong></span></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="conf.low_2"><span class='gt_from_md'><strong>95% CI</strong></span><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="p.value_2"><span class='gt_from_md'><strong>p</strong></span></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="estimate_3"><span class='gt_from_md'><strong>Beta</strong></span></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="conf.low_3"><span class='gt_from_md'><strong>95% CI</strong></span><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="p.value_3"><span class='gt_from_md'><strong>p</strong></span></th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr><td headers="label" class="gt_row gt_left">GL/10</td>
-<td headers="estimate_1" class="gt_row gt_center">0.016</td>
-<td headers="conf.low_1" class="gt_row gt_center">0.000, 0.032</td>
-<td headers="p.value_1" class="gt_row gt_center">0.043</td>
-<td headers="estimate_2" class="gt_row gt_center">0.012</td>
-<td headers="conf.low_2" class="gt_row gt_center">-0.010, 0.034</td>
-<td headers="p.value_2" class="gt_row gt_center">0.276</td>
-<td headers="estimate_3" class="gt_row gt_center">0.014</td>
-<td headers="conf.low_3" class="gt_row gt_center">-0.001, 0.029</td>
-<td headers="p.value_3" class="gt_row gt_center">0.066</td></tr>
-    <tr><td headers="label" class="gt_row gt_left">Sex</td>
-<td headers="estimate_1" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_1" class="gt_row gt_center"><br /></td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_2" class="gt_row gt_center"><br /></td>
-<td headers="p.value_2" class="gt_row gt_center"><br /></td>
-<td headers="estimate_3" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_3" class="gt_row gt_center"><br /></td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    F</td>
-<td headers="estimate_1" class="gt_row gt_center">—</td>
-<td headers="conf.low_1" class="gt_row gt_center">—</td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center">—</td>
-<td headers="conf.low_2" class="gt_row gt_center">—</td>
-<td headers="p.value_2" class="gt_row gt_center"><br /></td>
-<td headers="estimate_3" class="gt_row gt_center">—</td>
-<td headers="conf.low_3" class="gt_row gt_center">—</td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    M</td>
-<td headers="estimate_1" class="gt_row gt_center">0.520</td>
-<td headers="conf.low_1" class="gt_row gt_center">0.357, 0.683</td>
-<td headers="p.value_1" class="gt_row gt_center"><0.001</td>
-<td headers="estimate_2" class="gt_row gt_center">0.516</td>
-<td headers="conf.low_2" class="gt_row gt_center">0.353, 0.680</td>
-<td headers="p.value_2" class="gt_row gt_center"><0.001</td>
-<td headers="estimate_3" class="gt_row gt_center">0.436</td>
-<td headers="conf.low_3" class="gt_row gt_center">0.279, 0.593</td>
-<td headers="p.value_3" class="gt_row gt_center"><0.001</td></tr>
-    <tr><td headers="label" class="gt_row gt_left">Age</td>
-<td headers="estimate_1" class="gt_row gt_center">0.002</td>
-<td headers="conf.low_1" class="gt_row gt_center">-0.003, 0.007</td>
-<td headers="p.value_1" class="gt_row gt_center">0.466</td>
-<td headers="estimate_2" class="gt_row gt_center">0.002</td>
-<td headers="conf.low_2" class="gt_row gt_center">-0.003, 0.007</td>
-<td headers="p.value_2" class="gt_row gt_center">0.458</td>
-<td headers="estimate_3" class="gt_row gt_center">0.004</td>
-<td headers="conf.low_3" class="gt_row gt_center">-0.001, 0.009</td>
-<td headers="p.value_3" class="gt_row gt_center">0.094</td></tr>
-    <tr><td headers="label" class="gt_row gt_left">Race</td>
-<td headers="estimate_1" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_1" class="gt_row gt_center"><br /></td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_2" class="gt_row gt_center"><br /></td>
-<td headers="p.value_2" class="gt_row gt_center"><br /></td>
-<td headers="estimate_3" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_3" class="gt_row gt_center"><br /></td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    White</td>
-<td headers="estimate_1" class="gt_row gt_center">—</td>
-<td headers="conf.low_1" class="gt_row gt_center">—</td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center">—</td>
-<td headers="conf.low_2" class="gt_row gt_center">—</td>
-<td headers="p.value_2" class="gt_row gt_center"><br /></td>
-<td headers="estimate_3" class="gt_row gt_center">—</td>
-<td headers="conf.low_3" class="gt_row gt_center">—</td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    NonWhite</td>
-<td headers="estimate_1" class="gt_row gt_center">-0.185</td>
-<td headers="conf.low_1" class="gt_row gt_center">-0.339, -0.032</td>
-<td headers="p.value_1" class="gt_row gt_center">0.018</td>
-<td headers="estimate_2" class="gt_row gt_center">-0.184</td>
-<td headers="conf.low_2" class="gt_row gt_center">-0.338, -0.031</td>
-<td headers="p.value_2" class="gt_row gt_center">0.019</td>
-<td headers="estimate_3" class="gt_row gt_center">-0.193</td>
-<td headers="conf.low_3" class="gt_row gt_center">-0.340, -0.046</td>
-<td headers="p.value_3" class="gt_row gt_center">0.010</td></tr>
-    <tr><td headers="label" class="gt_row gt_left">Education</td>
-<td headers="estimate_1" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_1" class="gt_row gt_center"><br /></td>
-<td headers="p.value_1" class="gt_row gt_center"><0.001</td>
-<td headers="estimate_2" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_2" class="gt_row gt_center"><br /></td>
-<td headers="p.value_2" class="gt_row gt_center"><0.001</td>
-<td headers="estimate_3" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_3" class="gt_row gt_center"><br /></td>
-<td headers="p.value_3" class="gt_row gt_center">0.003</td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    LTCollege</td>
-<td headers="estimate_1" class="gt_row gt_center">—</td>
-<td headers="conf.low_1" class="gt_row gt_center">—</td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center">—</td>
-<td headers="conf.low_2" class="gt_row gt_center">—</td>
-<td headers="p.value_2" class="gt_row gt_center"><br /></td>
-<td headers="estimate_3" class="gt_row gt_center">—</td>
-<td headers="conf.low_3" class="gt_row gt_center">—</td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    College</td>
-<td headers="estimate_1" class="gt_row gt_center">-0.192</td>
-<td headers="conf.low_1" class="gt_row gt_center">-0.362, -0.023</td>
-<td headers="p.value_1" class="gt_row gt_center">0.026</td>
-<td headers="estimate_2" class="gt_row gt_center">-0.189</td>
-<td headers="conf.low_2" class="gt_row gt_center">-0.359, -0.020</td>
-<td headers="p.value_2" class="gt_row gt_center">0.029</td>
-<td headers="estimate_3" class="gt_row gt_center">-0.085</td>
-<td headers="conf.low_3" class="gt_row gt_center">-0.248, 0.079</td>
-<td headers="p.value_3" class="gt_row gt_center">0.310</td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    Postgrad</td>
-<td headers="estimate_1" class="gt_row gt_center">-0.386</td>
-<td headers="conf.low_1" class="gt_row gt_center">-0.558, -0.214</td>
-<td headers="p.value_1" class="gt_row gt_center"><0.001</td>
-<td headers="estimate_2" class="gt_row gt_center">-0.384</td>
-<td headers="conf.low_2" class="gt_row gt_center">-0.557, -0.211</td>
-<td headers="p.value_2" class="gt_row gt_center"><0.001</td>
-<td headers="estimate_3" class="gt_row gt_center">-0.284</td>
-<td headers="conf.low_3" class="gt_row gt_center">-0.450, -0.118</td>
-<td headers="p.value_3" class="gt_row gt_center"><0.001</td></tr>
-    <tr><td headers="label" class="gt_row gt_left">Group</td>
-<td headers="estimate_1" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_1" class="gt_row gt_center"><br /></td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_2" class="gt_row gt_center"><br /></td>
-<td headers="p.value_2" class="gt_row gt_center"><br /></td>
-<td headers="estimate_3" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_3" class="gt_row gt_center"><br /></td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    Cntrl</td>
-<td headers="estimate_1" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_1" class="gt_row gt_center"><br /></td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center">—</td>
-<td headers="conf.low_2" class="gt_row gt_center">—</td>
-<td headers="p.value_2" class="gt_row gt_center"><br /></td>
-<td headers="estimate_3" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_3" class="gt_row gt_center"><br /></td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    Avocado</td>
-<td headers="estimate_1" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_1" class="gt_row gt_center"><br /></td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center">-0.071</td>
-<td headers="conf.low_2" class="gt_row gt_center">-0.429, 0.287</td>
-<td headers="p.value_2" class="gt_row gt_center">0.698</td>
-<td headers="estimate_3" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_3" class="gt_row gt_center"><br /></td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">GL/10 * Group</td>
-<td headers="estimate_1" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_1" class="gt_row gt_center"><br /></td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_2" class="gt_row gt_center"><br /></td>
-<td headers="p.value_2" class="gt_row gt_center"><br /></td>
-<td headers="estimate_3" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_3" class="gt_row gt_center"><br /></td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">    GL/10 * Avocado</td>
-<td headers="estimate_1" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_1" class="gt_row gt_center"><br /></td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center">0.009</td>
-<td headers="conf.low_2" class="gt_row gt_center">-0.022, 0.039</td>
-<td headers="p.value_2" class="gt_row gt_center">0.571</td>
-<td headers="estimate_3" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_3" class="gt_row gt_center"><br /></td>
-<td headers="p.value_3" class="gt_row gt_center"><br /></td></tr>
-    <tr><td headers="label" class="gt_row gt_left">BMI</td>
-<td headers="estimate_1" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_1" class="gt_row gt_center"><br /></td>
-<td headers="p.value_1" class="gt_row gt_center"><br /></td>
-<td headers="estimate_2" class="gt_row gt_center"><br /></td>
-<td headers="conf.low_2" class="gt_row gt_center"><br /></td>
-<td headers="p.value_2" class="gt_row gt_center"><br /></td>
-<td headers="estimate_3" class="gt_row gt_center">0.059</td>
-<td headers="conf.low_3" class="gt_row gt_center">0.046, 0.071</td>
-<td headers="p.value_3" class="gt_row gt_center"><0.001</td></tr>
-  </tbody>
-  &#10;  <tfoot class="gt_footnotes">
-    <tr>
-      <td class="gt_footnote" colspan="10"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span> <span class='gt_from_md'>CI = Confidence Interval</span></td>
-    </tr>
-  </tfoot>
-</table>
-</div>
+<img src="summary_files/figure-gfm/gl_models-1.png" width="1952" />
+
+## Regression models of HFF on GI
+
+- Regression models were run using log(HFF) as the dependent variable
+  and glycemic index (GI) as an independent variable of interest
+  - Again, HFF was log-transformed
+  - GI values were divided by 100 (labelled as “GI/10” in the table
+    below). Thus, its beta estimate is interpreted as a change in
+    log(HFF) for a 100-unit change in GI.
+- Similarly to GL models, 3 models were run (see below)
+  - In all models, glycemic index was not significantly associated with
+    HFF
+
+<img src="summary_files/figure-gfm/gi_models-1.png" width="1960" />
 
 ## Notes
 

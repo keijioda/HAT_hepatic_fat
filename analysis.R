@@ -500,32 +500,35 @@ df_mod <- df %>%
          GI100 = GI / 100,
          kcal100 = kcal / 100)
 
+# Model for GL
 # Both control and intervention
 fit_gl <- lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3, data = df_mod)
 summary(fit_gl)
+
+# Check model diagnosis
 resid_panel(fit_gl, plots="all")
 
+# Base model with demographics
 var_labs <- list(GL10 = "GL/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
 
-# Base model with demographics
 t1 <- tbl_regression(fit_gl, 
                label = var_labs,
-               estimate_fun = label_style_number(digits = 4),
-               pvalue_fun   = label_style_pvalue(digits = 4)) %>% 
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
 # Base + trt and its interaction with GL
 t2 <- update(fit_gl, .~. + Trt + Trt * GL10) %>%
   tbl_regression(label = c(var_labs, Trt = "Group"),
-                 estimate_fun = label_style_number(digits = 4),
-                 pvalue_fun = label_style_pvalue(digits = 4)) %>% 
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
 # Base + BMI
 t3 <- update(fit_gl, .~. + bmi) %>%
   tbl_regression(label = c(var_labs, bmi = "BMI"),
-                 estimate_fun = label_style_number(digits = 4),
-                 pvalue_fun = label_style_pvalue(digits = 4)) %>% 
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
 
 # Model comparisons
@@ -537,22 +540,51 @@ tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
                 p.value_3 = "**p**")
 
 
-
-names(diet_other)
-
 update(fit_gl, .~. + kcal100 + pcten_SFA) %>% summary()
-update(fit_gl, .~. + bmi) %>% summary()
 
 # Control group only
 df_mod %>%
-  filter(Trt == "Cntrl") %>% 
+  filter(Trt == "Cntrl") %>%
+  # filter(Trt == "Avocado") %>%
   lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3, data = .) %>% 
   summary()
 
-df_mod %>% group_by(Trt) %>% tally()
 
-fit_gi <- lm(log(hff_Post) ~ I(GI/100) + SexM + age + Race2 + Educ3, data = df)
+# Models for GI
+# Both control and intervention
+fit_gi <- lm(log(hff_Post) ~ GI100 + SexM + age + Race2 + Educ3, data = df_mod)
 summary(fit_gi)
+
+# Check model diagnosis
 resid_panel(fit_gi, plots="all")
 
-update(fit_gi, .~. + bmi) %>% summary()
+# Base model with demographics
+var_labs <- list(GI100 = "GI/100", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+
+t1 <- tbl_regression(fit_gi, 
+               label = var_labs,
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + trt and its interaction with GI
+t2 <- update(fit_gi, .~. + Trt + Trt * GI100) %>%
+  tbl_regression(label = c(var_labs, Trt = "Group"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t3 <- update(fit_gi, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
+                        tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**")
