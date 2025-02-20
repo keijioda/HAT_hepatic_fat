@@ -363,6 +363,8 @@ scatter_HFF_GL + scatter_HFF_GI
   * Both kcal and SFA were not significantly associated with HFF
   * Glycemic load was not significantly associated with HFF, after further adjusting for kcal and SFA
 
+* There were no significant interactions between GL and gender, age, race, education, BMI, treatment group, or SFA (results not shown here)
+
 ```{r gl_models, echo = FALSE, warning = FALSE, message = FALSE}
 # Change units
 df_mod <- df %>% 
@@ -415,10 +417,12 @@ tbl_merge(tbls = list(t1, t2, t3),
 
 * Regression models were run using log(post HFF) as the dependent variable and glycemic index (GI) as an independent variable of interest
   * Again, HFF was log-transformed
-  * GI values were divided by 100 (labelled as "GI/10" in the table below). Thus, its beta estimate is interpreted as a change in log(HFF) for a 100-unit change in GI.
+  * GI values were divided by 100 (labelled as "GI/100" in the table below). Thus, its beta estimate is interpreted as a change in log(HFF) for a 100-unit change in GI.
 
 * Similarly to GL models, 3 models were run (see below)
   * In all models, glycemic index was not significantly associated with HFF
+  
+* There were no significant interactions between GI and gender, age, race, education, BMI, treatment group, or SFA (results not shown here)
 
 ```{r gi_models, echo = FALSE, warning = FALSE, message = FALSE}
 

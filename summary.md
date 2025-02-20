@@ -232,6 +232,8 @@ HAT hepatic fat study
   - Both kcal and SFA were not significantly associated with HFF
   - Glycemic load was not significantly associated with HFF, after
     further adjusting for kcal and SFA
+- There were no significant interactions between GL and gender, age,
+  race, education, BMI, treatment group, or SFA (results not shown here)
 
 <img src="summary_files/figure-gfm/gl_models-1.png" width="2077" />
 
@@ -241,12 +243,14 @@ HAT hepatic fat study
   variable and glycemic index (GI) as an independent variable of
   interest
   - Again, HFF was log-transformed
-  - GI values were divided by 100 (labelled as “GI/10” in the table
+  - GI values were divided by 100 (labelled as “GI/100” in the table
     below). Thus, its beta estimate is interpreted as a change in
     log(HFF) for a 100-unit change in GI.
 - Similarly to GL models, 3 models were run (see below)
   - In all models, glycemic index was not significantly associated with
     HFF
+- There were no significant interactions between GI and gender, age,
+  race, education, BMI, treatment group, or SFA (results not shown here)
 
 <img src="summary_files/figure-gfm/gi_models-1.png" width="2077" />
 

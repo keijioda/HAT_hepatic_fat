@@ -615,6 +615,14 @@ summary(fit_gl)
 # Check model diagnosis
 resid_panel(fit_gl, plots="all")
 
+# Check for interaction
+update(fit_gl, .~. + GL10*SexM)  %>% summary()
+update(fit_gl, .~. + GL10*age)   %>% summary()
+update(fit_gl, .~. + GL10*Race2) %>% summary()
+update(fit_gl, .~. + GL10*Educ3) %>% summary()
+update(fit_gl, .~. + bmi + GL10*bmi) %>% summary()
+update(fit_gl, .~. + SFA_ea + GL10*SFA_ea) %>% summary()
+
 # Base model with demographics
 var_labs <- list(GL10 = "GL/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
 
@@ -672,6 +680,13 @@ summary(fit_gi)
 
 # Check model diagnosis
 resid_panel(fit_gi, plots="all")
+
+# Check for interaction
+update(fit_gi, .~. + GL10*SexM)  %>% summary()
+update(fit_gi, .~. + GL10*age)   %>% summary()
+update(fit_gi, .~. + GL10*Race2) %>% summary()
+update(fit_gi, .~. + GL10*Educ3) %>% summary()
+update(fit_gi, .~. + bmi + GL10*bmi) %>% summary()
 
 # Base model with demographics
 var_labs <- list(GI100 = "GI/100", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
