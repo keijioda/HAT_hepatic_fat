@@ -7,7 +7,7 @@ output: github_document
 # Setup -------------------------------------------------------------------
 
 # Required packages
-pacs <- c("tidyverse", "haven", "ggExtra", "ggResidpanel", "gtsummary", "flextable")
+pacs <- c("tidyverse", "haven", "ggExtra", "ggResidpanel", "gtsummary", "flextable", "tableone")
 sapply(pacs, require, character.only = TRUE)
 
 ```
@@ -462,6 +462,21 @@ tbl_merge(tbls = list(t1, t2, t3),
 
 ```
 
+## Descriptive table
+
+* A descriptive table is shown below
+  * For HFF, the median and IQR are shown, instead of mean/SD
+  * kcal: Total energy intake (kcal/day)
+  * SFA_ea: Energy-adjusted SFA intake (gram/day)
+
+```{r table1, echo = FALSE, warning = FALSE, message = FALSE}
+
+table_vars <- c("SexM", "age", "Race2", "Educ3", "bmi", "Trt", "hff_Pre", "hff_Post", "GL", "GI", "kcal", "SFA_ea")
+
+CreateTableOne(table_vars, data = df) %>% 
+  print(showAllLevels = TRUE, nonnormal = c("hff_Pre", "hff_Post")) %>% 
+  kableone()
+```
 
 ## Notes
 

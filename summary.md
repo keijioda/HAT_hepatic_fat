@@ -250,6 +250,34 @@ HAT hepatic fat study
 
 <img src="summary_files/figure-gfm/gi_models-1.png" width="2077" />
 
+## Descriptive table
+
+- A descriptive table is shown below
+  - For HFF, the median and IQR are shown, instead of mean/SD
+  - kcal: Total energy intake (kcal/day)
+  - SFA_ea: Energy-adjusted SFA intake (gram/day)
+
+|                           | level     | Overall             |
+|:--------------------------|:----------|:--------------------|
+| n                         |           | 903                 |
+| SexM (%)                  | F         | 664 (73.5)          |
+|                           | M         | 239 (26.5)          |
+| age (mean (SD))           |           | 50.74 (14.07)       |
+| Race2 (%)                 | White     | 631 (69.9)          |
+|                           | NonWhite  | 272 (30.1)          |
+| Educ3 (%)                 | LTCollege | 324 (35.9)          |
+|                           | College   | 298 (33.0)          |
+|                           | Postgrad  | 281 (31.1)          |
+| bmi (mean (SD))           |           | 32.91 (5.44)        |
+| Trt (%)                   | Cntrl     | 456 (50.5)          |
+|                           | Avocado   | 447 (49.5)          |
+| hff_Pre (median \[IQR\])  |           | 0.06 \[0.02, 0.14\] |
+| hff_Post (median \[IQR\]) |           | 0.06 \[0.03, 0.15\] |
+| GL (mean (SD))            |           | 107.64 (46.02)      |
+| GI (mean (SD))            |           | 1257.02 (436.03)    |
+| kcal (mean (SD))          |           | 1957.67 (591.15)    |
+| SFA_ea (mean (SD))        |           | 27.68 (6.82)        |
+
 ## Notes
 
 - Zoom meeting on 1/23/2025 (KL/GS/CH/KO)

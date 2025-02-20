@@ -4,7 +4,7 @@
 # Setup -------------------------------------------------------------------
 
 # Required packages
-pacs <- c("tidyverse", "haven", "ggExtra", "ggResidpanel")
+pacs <- c("tidyverse", "haven", "ggExtra", "tableone", "ggResidpanel")
 sapply(pacs, require, character.only = TRUE)
 
 
@@ -588,6 +588,14 @@ df %>%
   ggplot(aes(x = value)) +
   geom_histogram() +
   facet_wrap(~nutr, scales = "free")
+
+
+# Table 1 -----------------------------------------------------------------
+
+table_vars <- c("SexM", "age", "Race2", "Educ3", "bmi", "Trt", "hff_Pre", "hff_Post", "GL", "GI", "kcal", "SFA_ea")
+
+CreateTableOne(table_vars, data = df) %>% 
+  print(showAllLevels = TRUE, nonnormal = c("hff_Pre", "hff_Post"))
 
 # Linear models -----------------------------------------------------------
 library(gtsummary)
