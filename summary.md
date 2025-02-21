@@ -205,14 +205,17 @@ HAT hepatic fat study
 - Regression models were run using log(post HFF) as the dependent
   variable and glycemic load (GL) as an independent variable of
   interest.
+
   - Because of its highly right-skewed distribution, HFF was
     log-transformed
   - GL values were divided by 10 (labelled as “GL/10” in the table
     below). Thus, its beta estimate is interpreted as a change in
     log(HFF) for a 10-unit change in GL.
+
 - Model 1 (or “base” model) below adjusts for basic demographic
   variables: gender, age, race (NH White/rest), education (less than
   college, college degree, postgraduate degree)
+
   - There was a significant positive association between HFF and GL. A
     10-unit increment in GL gives a corresponding increment of HFF by
     1.6% (i.e., $exp(0.016) = 1.016$ or 1.6% increase)
@@ -221,17 +224,27 @@ HAT hepatic fat study
   - Non-Whites had significantly lower HFF value than White
     ($exp(-0.185) = 0.83$ or 17% lower)
   - Education was negatively associated with HFF
+
 - In Model 2, BMI was added to the base model
+
   - BMI was significantly positively associated with HFF. A 1-unit
     increment of BMI corresponds to an increase of HFF by 6% (i.e.,
     $exp(0.059) = 1.061$ or 6% increase)
   - The beta coefficient for GL was attenuated and became
     non-significant after adding BMI into the base model
+
 - In Model 3, total energy (per 100 kcal) and SFA (gram,
   energy-adjusted) was added to the base model
+
   - Both kcal and SFA were not significantly associated with HFF
   - Glycemic load was not significantly associated with HFF, after
     further adjusting for kcal and SFA
+
+- \[I did not use added sugar and carbohydrate, because these two
+  variables have a high correlation with each other and this will cause
+  multicollinearity in the model. Carbohydrate was highly correlated
+  with GL too.\]
+
 - There were no significant interactions between GL and gender, age,
   race, education, BMI, treatment group, or SFA (results not shown here)
 

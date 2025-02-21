@@ -576,9 +576,8 @@ df$SFA_ea       <- kcal_adjust(SFA,       kcal, data = df, log = FALSE)
 df$addsugar_ea  <- kcal_adjust(addsugar,  kcal, data = df, log = FALSE)
 df$availcarb_ea <- kcal_adjust(availcarb, kcal, data = df, log = FALSE)
 
-cor(df$SFA_ea, df$addsugar_ea, df$availcarb_ea)
 df %>% 
-  select(SFA_ea, addsugar_ea, availcarb_ea) %>% 
+  select(SFA_ea, addsugar_ea, availcarb_ea, GL, GI) %>% 
   cor()
 
 df %>% 
