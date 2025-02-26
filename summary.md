@@ -20,14 +20,11 @@ HAT hepatic fat study
   `final_n961_foodgroups_june2024.sas7bdat`
 
   - n = 961
-  - Includes demographics (age, gender, race, education), BMI, and some
-    dietary data
+  - Includes demographics (age, gender, race, education), BMI, and GL/GI
 
-- Dietary data: A CSV file `HAT_GL_GI_by_FG_updated_080224.csv`
-
-  - n.obs = 2845 from n = 961 distinct PIDs
-  - Include glycemic load/index from various food groups by subject and
-    visit
+<!-- * Dietary data: A CSV file `HAT_GL_GI_by_FG_updated_080224.csv` -->
+<!--   * n.obs = 2845 from n = 961 distinct PIDs -->
+<!--   * Include glycemic load/index from various food groups by subject and visit -->
 
 ## Data check on hepatic fat
 
@@ -162,8 +159,8 @@ HAT hepatic fat study
 
 ## Exploratory analysis on HFF vs GL/GI
 
-- Based on dietary data, total GL/GI intake was calculated for each
-  visit and then averaged for each subject
+<!-- * Based on dietary data, total GL/GI intake was calculated for each visit and then averaged for each subject -->
+
 - After merging with demographic data and HFF data, there were n = 903
   subjects
   - This excludes those who had 2 MRIs after randomization and those
@@ -173,20 +170,20 @@ HAT hepatic fat study
 
 <!-- -->
 
-    ##     hff_Post              GL                GI        
-    ##  Min.   :0.001236   Min.   :  6.659   Min.   : 257.7  
-    ##  1st Qu.:0.026358   1st Qu.: 75.569   1st Qu.: 951.2  
-    ##  Median :0.057759   Median :103.296   Median :1209.4  
-    ##  Mean   :0.103438   Mean   :107.638   Mean   :1257.0  
-    ##  3rd Qu.:0.147841   3rd Qu.:133.434   3rd Qu.:1524.9  
-    ##  Max.   :0.544643   Max.   :350.114   Max.   :3191.7
+    ##     hff_Post              GL                GI       
+    ##  Min.   :0.001236   Min.   :  6.658   Min.   :38.22  
+    ##  1st Qu.:0.026358   1st Qu.: 75.568   1st Qu.:55.31  
+    ##  Median :0.057759   Median :103.142   Median :58.44  
+    ##  Mean   :0.103438   Mean   :107.614   Mean   :57.98  
+    ##  3rd Qu.:0.147841   3rd Qu.:133.435   3rd Qu.:61.24  
+    ##  Max.   :0.544643   Max.   :350.114   Max.   :69.88
 
 - Histograms of HFF, GL and GI are shown below
   - Note that the distribution of HFF is highly right-skewed
   - When HFF is used as the dependent variable, this will be
     log-transformed
-  - **\[Clarify\]** There are some GL values \> 300 and GI values
-    \> 3000. Are these values plausible?
+  - **\[Clarify\]** There are 4 participants with GL values \> 300. Are
+    these values plausible?
 
 ![](summary_files/figure-gfm/hff_gl_gi_histograms-1.png)<!-- -->
 
@@ -216,9 +213,9 @@ HAT hepatic fat study
   variables: gender, age, race (NH White/rest), education (less than
   college, college degree, postgraduate degree)
 
-  - There was a significant positive association between HFF and GL. A
-    10-unit increment in GL gives a corresponding increment of HFF by
-    1.6% (i.e., $exp(0.016) = 1.016$ or 1.6% increase)
+  - There was a significant positive association between HFF and GL (p =
+    0.04). A 10-unit increment in GL gives a corresponding increment of
+    HFF by 1.6% (i.e., $exp(0.016) = 1.016$ or 1.6% increase)
   - Males’ HFF values were significantly higher than females by 68%
     ($exp(0.520) = 1.68$)
   - Non-Whites had significantly lower HFF value than White
@@ -227,9 +224,9 @@ HAT hepatic fat study
 
 - In Model 2, BMI was added to the base model
 
-  - BMI was significantly positively associated with HFF. A 1-unit
-    increment of BMI corresponds to an increase of HFF by 6% (i.e.,
-    $exp(0.059) = 1.061$ or 6% increase)
+  - BMI was significantly positively associated with HFF (p \<.001). A
+    1-unit increment of BMI corresponds to an increase of HFF by 6%
+    (i.e., $exp(0.059) = 1.061$ or 6% increase)
   - The beta coefficient for GL was attenuated and became
     non-significant after adding BMI into the base model
 
@@ -255,13 +252,43 @@ HAT hepatic fat study
 - Regression models were run using log(post HFF) as the dependent
   variable and glycemic index (GI) as an independent variable of
   interest
+
   - Again, HFF was log-transformed
-  - GI values were divided by 100 (labelled as “GI/100” in the table
+  - GI values were divided by 10 (labelled as “GI/10” in the table
     below). Thus, its beta estimate is interpreted as a change in
-    log(HFF) for a 100-unit change in GI.
+    log(HFF) for a 10-unit change in GI.
+
 - Similarly to GL models, 3 models were run (see below)
-  - In all models, glycemic index was not significantly associated with
-    HFF
+
+- In Model 1 (or “base” model):
+
+  - There was a significant positive association between HFF and GI (p =
+    0.023). A 10-unit increment in GI gives a corresponding increment of
+    HFF by 19% (i.e., $exp(0.173) = 1.19$ or 19% increase)
+  - Males’ HFF values were significantly higher than females by 75%
+    ($exp(0.557) = 1.75$)
+  - Non-Whites had significantly lower HFF value than White
+    ($exp(-0.197) = 0.82$ or 18% lower)
+  - Education was negatively associated with HFF
+
+- In Model 2 (with BMI):
+
+  - BMI was significantly positively associated with HFF (p \<.001). A
+    1-unit increment of BMI corresponds to an increase of HFF by 6%
+    (i.e., $exp(0.059) = 1.061$ or 6% increase)
+  - The beta coefficient for GI was slightly attenuated but still
+    significant (p = 0.029). A 10-unit increment in GI gives a
+    corresponding increment of HFF by 17% (i.e., $exp(0.160) = 1.17$ or
+    17% increase)
+
+- In Model 3 (Base + kcal + SFA):
+
+  - Both kcal and SFA were not significantly associated with HFF
+  - The beta coefficient for GI was slightly attenuated but still
+    significant (p = 0.035). A 10-unit increment in GI gives a
+    corresponding increment of HFF by 18% (i.e., $exp(0.163) = 1.18$ or
+    18% increase)
+
 - There were no significant interactions between GI and gender, age,
   race, education, BMI, treatment group, or SFA (results not shown here)
 
@@ -273,6 +300,7 @@ HAT hepatic fat study
   - For HFF, the median and IQR are shown, instead of mean/SD
   - kcal: Total energy intake (kcal/day)
   - SFA_ea: Energy-adjusted SFA intake (gram/day)
+  - SFA values were energy-adjusted by the residual method
 
 |                           | level     | Overall             |
 |:--------------------------|:----------|:--------------------|
@@ -290,8 +318,8 @@ HAT hepatic fat study
 |                           | Avocado   | 447 (49.5)          |
 | hff_Pre (median \[IQR\])  |           | 0.06 \[0.02, 0.14\] |
 | hff_Post (median \[IQR\]) |           | 0.06 \[0.03, 0.15\] |
-| GL (mean (SD))            |           | 107.64 (46.02)      |
-| GI (mean (SD))            |           | 1257.02 (436.03)    |
+| GL (mean (SD))            |           | 107.61 (45.99)      |
+| GI (mean (SD))            |           | 57.98 (4.69)        |
 | kcal (mean (SD))          |           | 1957.67 (591.15)    |
 | SFA_ea (mean (SD))        |           | 27.68 (6.82)        |
 

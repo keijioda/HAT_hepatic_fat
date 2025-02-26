@@ -24,11 +24,11 @@ sapply(pacs, require, character.only = TRUE)
   
 * Demographic data: A SAS data file `final_n961_foodgroups_june2024.sas7bdat`
   * n = 961
-  * Includes demographics (age, gender, race, education), BMI, and some dietary data
+  * Includes demographics (age, gender, race, education), BMI, and GL/GI 
 
-* Dietary data: A CSV file `HAT_GL_GI_by_FG_updated_080224.csv`
-  * n.obs = 2845 from n = 961 distinct PIDs
-  * Include glycemic load/index from various food groups by subject and visit
+<!-- * Dietary data: A CSV file `HAT_GL_GI_by_FG_updated_080224.csv` -->
+<!--   * n.obs = 2845 from n = 961 distinct PIDs -->
+<!--   * Include glycemic load/index from various food groups by subject and visit -->
   
 ## Data check on hepatic fat
 
@@ -218,45 +218,28 @@ ggMarginal(test, type = "histogram")
 
 ## Exploratory analysis on HFF vs GL/GI
 
-* Based on dietary data, total GL/GI intake was calculated for each visit and then averaged for each subject
+<!-- * Based on dietary data, total GL/GI intake was calculated for each visit and then averaged for each subject -->
 * After merging with demographic data and HFF data, there were n = 903 subjects
   * This excludes those who had 2 MRIs after randomization and those missing either pre/post-intervention MRIs or both
 
 * Descriptive statistics on hepatic fat fraction (post-intervention only), GL and GI are shown below:
 
 ```{r hff_gl_gi_summary, echo = FALSE, warning = FALSE, message = FALSE}
-# Subjects: n = 961
-diet <- read_csv("./data/HAT_GL_GI_by_FG_updated_080224.csv")
-
-# GL variables
-GL_vars <- names(diet) %>% grep("_GL", ., value = TRUE)
-
-# GI variables
-GI_vars <- names(diet) %>% grep("_GI", ., value = TRUE)
-
-# Average GL/GI by PID
-glgi <- diet %>% 
-  mutate(GL = rowSums(across(all_of(GL_vars)))) %>% 
-  mutate(GI = rowSums(across(all_of(GI_vars)))) %>%
-  group_by(cpartid) %>% 
-  summarize(GL = mean(GL), GI = mean(GI)) %>% 
-  rename(pid = cpartid)
-
 # Using SPSS data file: n = 1008
 diet_other <- read_spss("./data/mean intake of selected nutriient covariates.sav")
-
-glgi2 <- glgi %>% 
-  inner_join(diet_other, by = "pid")
 
 # Inner-join yields n = 955 subjects
 # There are 46 PIDs whose HFF post is missing
 # There are  6 PIDs whose HFF pre  is missing
 # After removing these, n = 903 subjects
 df <- demog %>% 
-  inner_join(glgi2) %>% 
-  inner_join(hfat_wide) %>% 
+  # inner_join(glgi2) %>% 
+  inner_join(diet_other)   %>% 
+  inner_join(hfat_wide)    %>% 
   filter(!is.na(hff_Post)) %>% 
-  filter(!is.na(hff_Pre)) 
+  filter(!is.na(hff_Pre))  %>% 
+  rename(GL = avg_GL_glucose,
+         GI = avg_GI_glucose)
 
 # Energy adjustment
 kcal_adjust <- function(data, var, energy, log=TRUE){
@@ -295,7 +278,7 @@ df %>%
 * Histograms of HFF, GL and GI are shown below
   * Note that the distribution of HFF is highly right-skewed
   * When HFF is used as the dependent variable, this will be log-transformed
-  * **[Clarify]** There are some GL values > 300 and GI values > 3000. Are these values plausible? 
+  * **[Clarify]** There are 4 participants with GL values > 300. Are these values plausible? 
   
 ```{r hff_gl_gi_histograms, echo = FALSE, warning = FALSE, message = FALSE, fig.width = 15, fig.height = 5}
 hist_hff <- df %>% 
@@ -350,13 +333,13 @@ scatter_HFF_GL + scatter_HFF_GI
   * GL values were divided by 10 (labelled as "GL/10" in the table below). Thus, its beta estimate is interpreted as a change in log(HFF) for a 10-unit change in GL. 
 
 * Model 1 (or "base" model) below adjusts for basic demographic variables: gender, age, race (NH White/rest), education (less than college, college degree, postgraduate degree)
-  * There was a significant positive association between HFF and GL. A 10-unit increment in GL gives a corresponding increment of HFF by 1.6% (i.e., $exp(0.016) = 1.016$ or 1.6% increase)
+  * There was a significant positive association between HFF and GL (p = 0.04). A 10-unit increment in GL gives a corresponding increment of HFF by 1.6% (i.e., $exp(0.016) = 1.016$ or 1.6% increase)
   * Males' HFF values were significantly higher than females by 68% ($exp(0.520) = 1.68$)
   * Non-Whites had significantly lower HFF value than White ($exp(-0.185) = 0.83$ or 17% lower)
   * Education was negatively associated with HFF
   
 * In Model 2, BMI was added to the base model
-  * BMI was significantly positively associated with HFF. A 1-unit increment of BMI corresponds to an increase of HFF by 6% (i.e., $exp(0.059) = 1.061$ or 6% increase)
+  * BMI was significantly positively associated with HFF (p <.001). A 1-unit increment of BMI corresponds to an increase of HFF by 6% (i.e., $exp(0.059) = 1.061$ or 6% increase)
   * The beta coefficient for GL was attenuated and became non-significant after adding BMI into the base model
  
 * In Model 3, total energy (per 100 kcal) and SFA (gram, energy-adjusted) was added to the base model
@@ -371,7 +354,7 @@ scatter_HFF_GL + scatter_HFF_GI
 # Change units
 df_mod <- df %>% 
   mutate(GL10 = GL / 10,
-         GI100 = GI / 100,
+         GI10 = GI / 10,
          kcal100 = kcal / 100)
 
 # Model for GL
@@ -419,10 +402,23 @@ tbl_merge(tbls = list(t1, t2, t3),
 
 * Regression models were run using log(post HFF) as the dependent variable and glycemic index (GI) as an independent variable of interest
   * Again, HFF was log-transformed
-  * GI values were divided by 100 (labelled as "GI/100" in the table below). Thus, its beta estimate is interpreted as a change in log(HFF) for a 100-unit change in GI.
+  * GI values were divided by 10 (labelled as "GI/10" in the table below). Thus, its beta estimate is interpreted as a change in log(HFF) for a 10-unit change in GI.
 
 * Similarly to GL models, 3 models were run (see below)
-  * In all models, glycemic index was not significantly associated with HFF
+
+* In Model 1 (or "base" model):
+  * There was a significant positive association between HFF and GI (p = 0.023). A 10-unit increment in GI gives a corresponding increment of HFF by 19% (i.e., $exp(0.173) = 1.19$ or 19% increase)
+  * Males' HFF values were significantly higher than females by 75% ($exp(0.557) = 1.75$)
+  * Non-Whites had significantly lower HFF value than White ($exp(-0.197) = 0.82$ or 18% lower)
+  * Education was negatively associated with HFF
+  
+* In Model 2 (with BMI):
+  * BMI was significantly positively associated with HFF (p <.001). A 1-unit increment of BMI corresponds to an increase of HFF by 6% (i.e., $exp(0.059) = 1.061$ or 6% increase)
+  * The beta coefficient for GI was slightly attenuated but still significant (p = 0.029). A 10-unit increment in GI gives a corresponding increment of HFF by 17% (i.e., $exp(0.160) = 1.17$ or 17% increase)
+ 
+* In Model 3 (Base + kcal + SFA):
+  * Both kcal and SFA were not significantly associated with HFF
+  * The beta coefficient for GI was slightly attenuated but still significant (p = 0.035). A 10-unit increment in GI gives a corresponding increment of HFF by 18% (i.e., $exp(0.163) = 1.18$ or 18% increase)
   
 * There were no significant interactions between GI and gender, age, race, education, BMI, treatment group, or SFA (results not shown here)
 
@@ -430,10 +426,10 @@ tbl_merge(tbls = list(t1, t2, t3),
 
 # Models for GI
 # Both control and intervention
-fit_gi <- lm(log(hff_Post) ~ GI100 + SexM + age + Race2 + Educ3, data = df_mod)
+fit_gi <- lm(log(hff_Post) ~ GI10 + SexM + age + Race2 + Educ3, data = df_mod)
 
 # Base model with demographics
-var_labs <- list(GI100 = "GI/100", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+var_labs <- list(GI10 = "GI/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
 
 t1 <- tbl_regression(fit_gi, 
                label = var_labs,
@@ -474,6 +470,7 @@ tbl_merge(tbls = list(t1, t2, t3),
   * For HFF, the median and IQR are shown, instead of mean/SD
   * kcal: Total energy intake (kcal/day)
   * SFA_ea: Energy-adjusted SFA intake (gram/day)
+  * SFA values were energy-adjusted by the residual method
 
 ```{r table1, echo = FALSE, warning = FALSE, message = FALSE}
 

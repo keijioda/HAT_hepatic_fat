@@ -19,7 +19,6 @@ demog <- read_sas("./data/final_n961_foodgroups_june2024.sas7bdat") %>%
          Race2 = relevel(Race2, "White"),
          Race3 = factor(Race_New, labels = c("AA", "White", "Other", "Other", "Other")),
          Race3 = relevel(Race3, "White"))
-demog
 
 names(demog)
 
@@ -95,6 +94,11 @@ demog %>%
   group_by(Race3) %>% 
   tally() %>% 
   mutate(pct = n / sum(n) * 100)
+
+# GL/GI
+demog %>% 
+  select(avg_GL_glucose, avg_GI_glucose) %>% 
+  summary()
 
 # Hepatic fat measurements ------------------------------------------------
 
@@ -307,26 +311,29 @@ hfat %>%
 # 
 # ggMarginal(p, type = "histogram")
 
-# Dietary data ------------------------------------------------------------
-
-# Subjects: n = 961
-diet <- read_csv("./data/HAT_GL_GI_by_FG_updated_080224.csv")
-n_distinct(diet$cpartid)
-nrow(diet)
-
-# GL variables
-GL_vars <- names(diet) %>% grep("_GL", ., value = TRUE)
-
-# GI variables
-GI_vars <- names(diet) %>% grep("_GI", ., value = TRUE)
-
-# Average GL/GI by PID
-glgi <- diet %>% 
-  mutate(GL = rowSums(across(all_of(GL_vars)))) %>% 
-  mutate(GI = rowSums(across(all_of(GI_vars)))) %>%
-  group_by(cpartid) %>% 
-  summarize(GL = mean(GL), GI = mean(GI)) %>% 
-  rename(pid = cpartid)
+# # Dietary data ------------------------------------------------------------
+# 
+# # Subjects: n = 961
+# diet <- read_csv("./data/HAT_GL_GI_by_FG_updated_080224.csv")
+# n_distinct(diet$cpartid)
+# nrow(diet)
+# names(diet)
+# 
+# # GL variables
+# GL_vars <- names(diet) %>% grep("_GL", ., value = TRUE)
+# diet %>% select(all_of(GL_vars)) %>% colMeans()
+# 
+# # GI variables
+# GI_vars <- names(diet) %>% grep("_GI", ., value = TRUE)
+# diet %>% select(all_of(GI_vars)) %>% colMeans()
+# 
+# # Average GL/GI by PID
+# glgi <- diet %>% 
+#   mutate(GL = rowSums(across(all_of(GL_vars)))) %>% 
+#   mutate(GI = rowSums(across(all_of(GI_vars)))) %>%
+#   group_by(cpartid) %>% 
+#   summarize(GL = mean(GL), GI = mean(GI)) %>% 
+#   rename(pid = cpartid)
 
 # Dietary data for covariate from GS --------------------------------------
 
@@ -335,13 +342,14 @@ diet_other <- read_spss("./data/mean intake of selected nutriient covariates.sav
 nrow(diet_other)
 names(diet_other)
 
-# When merged with GL/GI data, n = 961
-diet_other %>% semi_join(diet, by = c("pid" = "cpartid")) %>% nrow()
+# # When merged with GL/GI data, n = 961
+# diet_other %>% semi_join(diet, by = c("pid" = "cpartid")) %>% nrow()
 
-glgi2 <- glgi %>% 
-  inner_join(diet_other, by = "pid")
+# When merged with demog data, n = 961
+diet_other %>% semi_join(demog) %>% nrow()
 
-glgi2 %>% summary()
+# glgi2 <- glgi %>% 
+#   inner_join(diet_other, by = "pid")
 
 # Merge data --------------------------------------------------------------
 
@@ -402,10 +410,15 @@ demog %>%
 # There are  6 PIDs whose HFF pre  is missing
 # After removing these, n = 903 subjects
 df <- demog %>% 
-  inner_join(glgi2) %>% 
+  # inner_join(glgi2) %>% 
+  inner_join(diet_other) %>% 
   inner_join(hfat_wide) %>% 
   filter(!is.na(hff_Post)) %>% 
-  filter(!is.na(hff_Pre))
+  filter(!is.na(hff_Pre)) %>% 
+  rename(GL = avg_GL_glucose,
+         GI = avg_GI_glucose)
+
+names(df)
 
 df %>% 
   select(hff_Pre, hff_Post) %>% 
@@ -602,7 +615,8 @@ library(gtsummary)
 # Change units
 df_mod <- df %>% 
   mutate(GL10 = GL / 10,
-         GI100 = GI / 100,
+         # GI100 = GI / 100,
+         GI10 = GI / 10,
          kcal100 = kcal / 100)
 
 # Model for GL
@@ -619,6 +633,7 @@ update(fit_gl, .~. + GL10*SexM)  %>% summary()
 update(fit_gl, .~. + GL10*age)   %>% summary()
 update(fit_gl, .~. + GL10*Race2) %>% summary()
 update(fit_gl, .~. + GL10*Educ3) %>% summary()
+update(fit_gl, .~. + Trt + GL10*Trt) %>% summary()
 update(fit_gl, .~. + bmi + GL10*bmi) %>% summary()
 update(fit_gl, .~. + SFA_ea + GL10*SFA_ea) %>% summary()
 
@@ -674,21 +689,22 @@ df_mod %>%
 
 # Models for GI
 # Both control and intervention
-fit_gi <- lm(log(hff_Post) ~ GI100 + SexM + age + Race2 + Educ3, data = df_mod)
+fit_gi <- lm(log(hff_Post) ~ GI10 + SexM + age + Race2 + Educ3, data = df_mod)
 summary(fit_gi)
 
 # Check model diagnosis
 resid_panel(fit_gi, plots="all")
 
 # Check for interaction
-update(fit_gi, .~. + GL10*SexM)  %>% summary()
-update(fit_gi, .~. + GL10*age)   %>% summary()
-update(fit_gi, .~. + GL10*Race2) %>% summary()
-update(fit_gi, .~. + GL10*Educ3) %>% summary()
-update(fit_gi, .~. + bmi + GL10*bmi) %>% summary()
+update(fit_gi, .~. + GI10*SexM)  %>% summary()
+update(fit_gi, .~. + GI10*age)   %>% summary()
+update(fit_gi, .~. + GI10*Race2) %>% summary()
+update(fit_gi, .~. + GI10*Educ3) %>% summary()
+update(fit_gi, .~. + bmi + GI10*bmi) %>% summary()
+update(fit_gi, .~. + Trt + GI10*Trt) %>% summary()
 
 # Base model with demographics
-var_labs <- list(GI100 = "GI/100", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+var_labs <- list(GI10 = "GI/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
 
 t1 <- tbl_regression(fit_gi, 
                label = var_labs,
