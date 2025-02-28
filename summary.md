@@ -261,7 +261,7 @@ HAT hepatic fat study
   variables.
 
   - As expected, the mean HFF values (see the column `emmean`) tend to
-    be larger for greater tertile groups.
+    be greater for higher tertile groups.
   - A significant difference was found between the 1st and the 3rd
     tertile groups (p = 0.0085). There were no significant differences
     between (1st vs 2nd) or (2nd vs 3rd).
@@ -332,7 +332,7 @@ HAT hepatic fat study
   variables.
 
   - As expected, the mean HFF values (see the column `emmean`) tend to
-    be larger for greater tertile groups.
+    be greater for higher tertile groups.
   - A significant difference was found between the 1st and the 3rd
     tertile groups (p = 0.0198). There were no significant differences
     between (1st vs 2nd) or (2nd vs 3rd).

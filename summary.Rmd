@@ -404,7 +404,7 @@ tbl_merge(tbls = list(t1, t2, t3),
 * The results above suggest that GL is significantly positively associated with HFF when adjusted for demographic variables (gender, age, race and education in Model 1). In order to estimate how HFF differs according to GL levels, GL values were categorized into 3 equal tertiles (6.6-85.4, 85.5-121, >121) and then this categorical GL variable was entered into the model, instead of using GL as continuous as in the previous model. 
 
 * The table below shows estimated means (with 95% confidence intervals) of HFF for the tertile groups, after adjusting for the demographic variables.
-  * As expected, the mean HFF values (see the column `emmean`) tend to be larger for greater tertile groups.
+  * As expected, the mean HFF values (see the column `emmean`) tend to be greater for higher tertile groups.
   * A significant difference was found between the 1st and the 3rd tertile groups (p = 0.0085). There were no significant differences between (1st vs 2nd) or (2nd vs 3rd).
 
 ```{r gl_cat_models, echo = FALSE, warning = FALSE, message = FALSE}
@@ -488,7 +488,7 @@ tbl_merge(tbls = list(t1, t2, t3),
 * The results above suggest that GI is significantly positively associated with HFF when adjusted for demographics (Model 1), demographics plus BMI (Model 2), or demographics plus energy intake (Model 3). In order to estimate how HFF differs according to GI levels, GI values were categorized into 3 equal tertiles (38.2-56.3, 56.4-60, >60) and then this categorical GI variable was entered into the model, instead of using GI as continuous as in the previous model. 
 
 * The table below shows estimated means (with 95% confidence intervals) of HFF for the tertile groups, after adjusting for the demographic variables.
-  * As expected, the mean HFF values (see the column `emmean`) tend to be larger for greater tertile groups.
+  * As expected, the mean HFF values (see the column `emmean`) tend to be greater for higher tertile groups.
   * A significant difference was found between the 1st and the 3rd tertile groups (p = 0.0198). There were no significant differences between (1st vs 2nd) or (2nd vs 3rd).
 
 ```{r gi_cat_models, echo = FALSE, warning = FALSE, message = FALSE}
