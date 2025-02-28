@@ -495,6 +495,32 @@ scatter_HFF_GI <- df %>%
 
 scatter_HFF_GL + scatter_HFF_GI
 
+names(df)
+
+df %>%
+  ggplot(aes(x = GL, y = hff_Post, color = SexM, group = SexM)) +
+  geom_point() +
+  geom_smooth(span = 0.9, method = "lm") +
+  scale_y_continuous(trans = "log10") +
+  labs(x = "Glycemic load", y = "Hepatic fat fraction (log-scale)", color = "Gender") +
+  theme(legend.position = "bottom")
+
+df %>%
+  ggplot(aes(x = GI, y = hff_Post, color = SexM, group = SexM)) +
+  geom_point() +
+  geom_smooth(span = 0.9, method = "lm") +
+  scale_y_continuous(trans = "log10") +
+  labs(x = "Glycemic index", y = "Hepatic fat fraction (log-scale)", color = "Gender") +
+  theme(legend.position = "bottom")
+
+df %>% 
+  ggplot(aes(x = GL, y = hff_Post, color = Educ3, group = Educ3)) +
+  geom_point() +
+  geom_smooth(span = 0.9, method = "lm") +
+  scale_y_continuous(trans = "log10") +
+  labs(x = "Glycemic load", y = "Hepatic fat fraction (log-scale)") +
+  theme(legend.position = "bottom")
+
 df %>% 
   ggplot(aes(x = hff_Pre, y = hff_Post, color = Trt)) +
   geom_point() +
@@ -697,7 +723,8 @@ fit_gl_cat3 %>%
 
 # Significant difference exists between 1st and 3rd tertile
 fit_gl_cat3 %>% 
-  emmeans(pairwise ~GL_cat3, adjust = "none")
+  emmeans(pairwise ~GL_cat3, adjust = "none") %>% 
+  confint(adjust = "none")
   
 df_mod %>% 
   group_by(GL_cat3) %>% 

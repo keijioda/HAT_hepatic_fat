@@ -197,6 +197,14 @@ HAT hepatic fat study
 
 ![](summary_files/figure-gfm/hff_gl_gi_scatter-1.png)<!-- -->
 
+- Below, you see similar plots, except that this time a linear trend was
+  overlaid for each gender
+  - There is a clear difference in HFF between two genders. Males have
+    higher HFF values than females
+  - Maybe slight upward trend for both gender?
+
+![](summary_files/figure-gfm/hff_gl_gi_scatter_by_sex-1.png)<!-- -->
+
 ## Regression models of HFF on GL
 
 - Regression models were run using log(post HFF) as the dependent

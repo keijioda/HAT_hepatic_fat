@@ -326,6 +326,31 @@ scatter_HFF_GI <- df %>%
 scatter_HFF_GL + scatter_HFF_GI
 ```
 
+* Below, you see similar plots, except that this time a linear trend was overlaid for each gender
+  * There is a clear difference in HFF between two genders. Males have higher HFF values than females
+  * Maybe slight upward trend for both gender?
+
+```{r hff_gl_gi_scatter_by_sex, echo = FALSE, warning = FALSE, message = FALSE, fig.width = 10, fig.height = 5}
+scatter_HFF_GL_by_Sex <- df %>% 
+  ggplot(aes(x = GL, y = hff_Post, color = SexM)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(trans = "log10") +
+  labs(x = "Glycemic load", y = "Hepatic fat fraction (log-scale)", color = "Gender") +
+  theme(legend.position = "bottom")
+
+scatter_HFF_GI_by_Sex <- df %>% 
+  ggplot(aes(x = GI, y = hff_Post, color = SexM)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(trans = "log10") +
+  labs(x = "Glycemic index", y = "Hepatic fat fraction (log-scale)", color = "Gender") +
+  theme(legend.position = "bottom")
+
+scatter_HFF_GL_by_Sex + scatter_HFF_GI_by_Sex
+
+```
+
 ## Regression models of HFF on GL
 
 * Regression models were run using log(post HFF) as the dependent variable and glycemic load (GL) as an independent variable of interest.
