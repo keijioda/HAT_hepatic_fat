@@ -4,7 +4,7 @@
 # Setup -------------------------------------------------------------------
 
 # Required packages
-pacs <- c("tidyverse", "haven", "ggExtra", "tableone", "ggResidpanel")
+pacs <- c("tidyverse", "haven", "ggExtra", "tableone", "ggResidpanel", "emmeans")
 sapply(pacs, require, character.only = TRUE)
 
 
@@ -418,8 +418,6 @@ df <- demog %>%
   rename(GL = avg_GL_glucose,
          GI = avg_GI_glucose)
 
-names(df)
-
 df %>% 
   select(hff_Pre, hff_Post) %>% 
   summary()
@@ -613,11 +611,16 @@ CreateTableOne(table_vars, data = df) %>%
 library(gtsummary)
 
 # Change units
+# Create tertile groups
 df_mod <- df %>% 
   mutate(GL10 = GL / 10,
          # GI100 = GI / 100,
          GI10 = GI / 10,
-         kcal100 = kcal / 100)
+         kcal100 = kcal / 100) %>% 
+  mutate(GL_cat3 = cut(GL, quantile(GL, 0:3/3), include.lowest = TRUE),
+         GL_cat3 = factor(GL_cat3, labels = c("1st tertile", "2nd tertile", "3rd tertile")),
+         GI_cat3 = cut(GI, quantile(GI, 0:3/3), include.lowest = TRUE),
+         GI_cat3 = factor(GI_cat3, labels = c("1st tertile", "2nd tertile", "3rd tertile")))
 
 # Model for GL
 # Both control and intervention
@@ -661,10 +664,12 @@ t2 <- update(fit_gl, .~. + bmi) %>%
   add_global_p(keep = TRUE, include = Educ3)
 
 # Base + dietary variables (including kcal) 
-t3 <- update(fit_gl, .~. + kcal100 + SFA_ea) %>%
+# t3 <- update(fit_gl, .~. + kcal100 + SFA_ea) %>%
+t3 <- update(fit_gl, .~. + kcal100) %>%
   tbl_regression(label = c(var_labs, 
-                           kcal100 = "Energy (per 100 kcal)",
-                           SFA_ea = "SFA, gram (energy-adjusted)"),
+                           kcal100 = "Energy (per 100 kcal)"),
+                           # kcal100 = "Energy (per 100 kcal)",
+                           # SFA_ea = "SFA, gram (energy-adjusted)"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
@@ -679,13 +684,31 @@ tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
 
 update(fit_gl, .~. + kcal100 + pcten_SFA) %>% summary()
 
+# GL as tertiles
+fit_gl_cat3 <- lm(log(hff_Post) ~ GL_cat3 + SexM + age + Race2 + Educ3, data = df_mod)
+summary(fit_gl_cat3)
+
+# Adjusted mean (with 95% CI) after back-transformation
+fit_gl_cat3 %>% 
+  emmeans(~GL_cat3) %>% 
+  as_tibble() %>% 
+  select(GL_cat3, emmean, lower.CL, upper.CL) %>% 
+  mutate_at(2:4, exp)
+
+# Significant difference exists between 1st and 3rd tertile
+fit_gl_cat3 %>% 
+  emmeans(pairwise ~GL_cat3, adjust = "none")
+  
+df_mod %>% 
+  group_by(GL_cat3) %>% 
+  summarize(min = min(GL), max = max(GL))
+
 # Control group only
 df_mod %>%
   filter(Trt == "Cntrl") %>%
   # filter(Trt == "Avocado") %>%
   lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3, data = .) %>% 
   summary()
-
 
 # Models for GI
 # Both control and intervention
@@ -727,10 +750,12 @@ t2 <- update(fit_gi, .~. + bmi) %>%
   add_global_p(keep = TRUE, include = Educ3)
 
 # Base + dietary variables (including kcal) 
-t3 <- update(fit_gi, .~. + kcal100 + SFA_ea) %>%
+# t3 <- update(fit_gi, .~. + kcal100 + SFA_ea) %>%
+t3 <- update(fit_gi, .~. + kcal100) %>%
   tbl_regression(label = c(var_labs, 
-                           kcal100 = "Energy (per 100 kcal)",
-                           SFA_ea = "SFA, gram (energy-adjusted)"),
+                           kcal100 = "Energy (per 100 kcal)"),
+                           # kcal100 = "Energy (per 100 kcal)",
+                           # SFA_ea = "SFA, gram (energy-adjusted)"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
@@ -742,3 +767,23 @@ tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
                 p.value_1 = "**p**", 
                 p.value_2 = "**p**", 
                 p.value_3 = "**p**")
+
+# GI as tertiles
+fit_gi_cat3 <- lm(log(hff_Post) ~ GI_cat3 + SexM + age + Race2 + Educ3, data = df_mod)
+summary(fit_gi_cat3)
+
+df_mod %>% 
+  group_by(GI_cat3) %>% 
+  summarize(min = min(GI), max = max(GI))
+
+# Adjusted mean (with 95% CI) after back-transformation
+fit_gi_cat3 %>% 
+  emmeans(~GI_cat3) %>% 
+  as_tibble() %>% 
+  select(GI_cat3, emmean, lower.CL, upper.CL) %>% 
+  mutate_at(2:4, exp)
+
+# Significant difference exists between 1st and 3rd tertile
+fit_gi_cat3 %>% 
+  emmeans(pairwise ~GI_cat3, adjust = "none")
+ 

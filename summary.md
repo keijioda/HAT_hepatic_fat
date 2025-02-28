@@ -230,12 +230,13 @@ HAT hepatic fat study
   - The beta coefficient for GL was attenuated and became
     non-significant after adding BMI into the base model
 
-- In Model 3, total energy (per 100 kcal) and SFA (gram,
-  energy-adjusted) was added to the base model
+- In Model 3, total energy (per 100 kcal) ~~and SFA (gram,
+  energy-adjusted)~~ was added to the base model
 
-  - Both kcal and SFA were not significantly associated with HFF
+  - The total energy intake (kcal) was not significantly associated with
+    HFF
   - Glycemic load was not significantly associated with HFF, after
-    further adjusting for kcal and SFA
+    further adjusting for kcal ~~and SFA~~
 
 - \[I did not use added sugar and carbohydrate, because these two
   variables have a high correlation with each other and this will cause
@@ -245,7 +246,31 @@ HAT hepatic fat study
 - There were no significant interactions between GL and gender, age,
   race, education, BMI, treatment group, or SFA (results not shown here)
 
-<img src="summary_files/figure-gfm/gl_models-1.png" width="2077" />
+<img src="summary_files/figure-gfm/gl_models-1.png" width="1976" />
+
+- The results above suggest that GL is significantly positively
+  associated with HFF when adjusted for demographic variables (gender,
+  age, race and education in Model 1). In order to estimate how HFF
+  differs according to GL levels, GL values were categorized into 3
+  equal tertiles (6.6-85.4, 85.5-121, \>121) and then this categorical
+  GL variable was entered into the model, instead of using GL as
+  continuous as in the previous model.
+
+- The table below shows estimated means (with 95% confidence intervals)
+  of HFF for the tertile groups, after adjusting for the demographic
+  variables.
+
+  - As expected, the mean HFF values (see the column `emmean`) tend to
+    be larger for greater tertile groups.
+  - A significant difference was found between the 1st and the 3rd
+    tertile groups (p = 0.0085). There were no significant differences
+    between (1st vs 2nd) or (2nd vs 3rd).
+
+| GL_cat3     | emmean | lower.CL | upper.CL |
+|:------------|-------:|---------:|---------:|
+| 1st tertile | 0.0566 |   0.0494 |   0.0649 |
+| 2nd tertile | 0.0669 |   0.0586 |   0.0763 |
+| 3rd tertile | 0.0716 |   0.0631 |   0.0813 |
 
 ## Regression models of HFF on GI
 
@@ -281,18 +306,42 @@ HAT hepatic fat study
     corresponding increment of HFF by 17% (i.e., $exp(0.160) = 1.17$ or
     17% increase)
 
-- In Model 3 (Base + kcal + SFA):
+- In Model 3 (Base + kcal):
 
-  - Both kcal and SFA were not significantly associated with HFF
+  - The total energy intake (kcal) not significantly associated with HFF
   - The beta coefficient for GI was slightly attenuated but still
-    significant (p = 0.035). A 10-unit increment in GI gives a
+    significant (p = 0.034). A 10-unit increment in GI gives a
     corresponding increment of HFF by 18% (i.e., $exp(0.163) = 1.18$ or
     18% increase)
 
 - There were no significant interactions between GI and gender, age,
   race, education, BMI, treatment group, or SFA (results not shown here)
 
-<img src="summary_files/figure-gfm/gi_models-1.png" width="2077" />
+<img src="summary_files/figure-gfm/gi_models-1.png" width="1976" />
+
+- The results above suggest that GI is significantly positively
+  associated with HFF when adjusted for demographics (Model 1),
+  demographics plus BMI (Model 2), or demographics plus energy intake
+  (Model 3). In order to estimate how HFF differs according to GI
+  levels, GI values were categorized into 3 equal tertiles (38.2-56.3,
+  56.4-60, \>60) and then this categorical GI variable was entered into
+  the model, instead of using GI as continuous as in the previous model.
+
+- The table below shows estimated means (with 95% confidence intervals)
+  of HFF for the tertile groups, after adjusting for the demographic
+  variables.
+
+  - As expected, the mean HFF values (see the column `emmean`) tend to
+    be larger for greater tertile groups.
+  - A significant difference was found between the 1st and the 3rd
+    tertile groups (p = 0.0198). There were no significant differences
+    between (1st vs 2nd) or (2nd vs 3rd).
+
+| GI_cat3     | emmean | lower.CL | upper.CL |
+|:------------|-------:|---------:|---------:|
+| 1st tertile | 0.0601 |   0.0527 |   0.0685 |
+| 2nd tertile | 0.0622 |   0.0545 |   0.0710 |
+| 3rd tertile | 0.0737 |   0.0648 |   0.0839 |
 
 ## Descriptive table
 

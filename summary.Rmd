@@ -7,7 +7,7 @@ output: github_document
 # Setup -------------------------------------------------------------------
 
 # Required packages
-pacs <- c("tidyverse", "haven", "ggExtra", "ggResidpanel", "gtsummary", "flextable", "tableone")
+pacs <- c("tidyverse", "haven", "ggExtra", "ggResidpanel", "gtsummary", "flextable", "tableone", "emmeans")
 sapply(pacs, require, character.only = TRUE)
 
 ```
@@ -342,9 +342,9 @@ scatter_HFF_GL + scatter_HFF_GI
   * BMI was significantly positively associated with HFF (p <.001). A 1-unit increment of BMI corresponds to an increase of HFF by 6% (i.e., $exp(0.059) = 1.061$ or 6% increase)
   * The beta coefficient for GL was attenuated and became non-significant after adding BMI into the base model
  
-* In Model 3, total energy (per 100 kcal) and SFA (gram, energy-adjusted) was added to the base model
-  * Both kcal and SFA were not significantly associated with HFF
-  * Glycemic load was not significantly associated with HFF, after further adjusting for kcal and SFA
+* In Model 3, total energy (per 100 kcal) ~~and SFA (gram, energy-adjusted)~~ was added to the base model
+  * The total energy intake (kcal) was not significantly associated with HFF
+  * Glycemic load was not significantly associated with HFF, after further adjusting for kcal ~~and SFA~~
   
 * [I did not use added sugar and carbohydrate, because these two variables have a high correlation with each other and this will cause multicollinearity in the model. Carbohydrate was highly correlated with GL too.]
 
@@ -354,8 +354,13 @@ scatter_HFF_GL + scatter_HFF_GI
 # Change units
 df_mod <- df %>% 
   mutate(GL10 = GL / 10,
+         # GI100 = GI / 100,
          GI10 = GI / 10,
-         kcal100 = kcal / 100)
+         kcal100 = kcal / 100) %>% 
+  mutate(GL_cat3 = cut(GL, quantile(GL, 0:3/3), include.lowest = TRUE),
+         GL_cat3 = factor(GL_cat3, labels = c("1st tertile", "2nd tertile", "3rd tertile")),
+         GI_cat3 = cut(GI, quantile(GI, 0:3/3), include.lowest = TRUE),
+         GI_cat3 = factor(GI_cat3, labels = c("1st tertile", "2nd tertile", "3rd tertile")))
 
 # Model for GL
 # Both control and intervention
@@ -378,10 +383,9 @@ t2 <- update(fit_gl, .~. + bmi) %>%
   add_global_p(keep = TRUE, include = Educ3)
 
 # Base + dietary variables (including kcal) 
-t3 <- update(fit_gl, .~. + kcal100 + SFA_ea) %>%
+t3 <- update(fit_gl, .~. + kcal100) %>%
   tbl_regression(label = c(var_labs, 
-                           kcal100 = "Energy (per 100 kcal)",
-                           SFA_ea = "SFA, gram (energy-adjusted)"),
+                           kcal100 = "Energy (per 100 kcal)"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
@@ -397,6 +401,24 @@ tbl_merge(tbls = list(t1, t2, t3),
 
 ```
 
+* The results above suggest that GL is significantly positively associated with HFF when adjusted for demographic variables (gender, age, race and education in Model 1). In order to estimate how HFF differs according to GL levels, GL values were categorized into 3 equal tertiles (6.6-85.4, 85.5-121, >121) and then this categorical GL variable was entered into the model, instead of using GL as continuous as in the previous model. 
+
+* The table below shows estimated means (with 95% confidence intervals) of HFF for the tertile groups, after adjusting for the demographic variables.
+  * As expected, the mean HFF values (see the column `emmean`) tend to be larger for greater tertile groups.
+  * A significant difference was found between the 1st and the 3rd tertile groups (p = 0.0085). There were no significant differences between (1st vs 2nd) or (2nd vs 3rd).
+
+```{r gl_cat_models, echo = FALSE, warning = FALSE, message = FALSE}
+# GL as tertiles
+fit_gl_cat3 <- lm(log(hff_Post) ~ GL_cat3 + SexM + age + Race2 + Educ3, data = df_mod)
+
+# Adjusted mean (with 95% CI) after back-transformation
+fit_gl_cat3 %>% 
+  emmeans(~GL_cat3) %>% 
+  as_tibble() %>% 
+  select(GL_cat3, emmean, lower.CL, upper.CL) %>% 
+  mutate_at(2:4, \(x) round(exp(x), 4)) %>% 
+  knitr::kable()
+```
 
 ## Regression models of HFF on GI
 
@@ -416,9 +438,9 @@ tbl_merge(tbls = list(t1, t2, t3),
   * BMI was significantly positively associated with HFF (p <.001). A 1-unit increment of BMI corresponds to an increase of HFF by 6% (i.e., $exp(0.059) = 1.061$ or 6% increase)
   * The beta coefficient for GI was slightly attenuated but still significant (p = 0.029). A 10-unit increment in GI gives a corresponding increment of HFF by 17% (i.e., $exp(0.160) = 1.17$ or 17% increase)
  
-* In Model 3 (Base + kcal + SFA):
-  * Both kcal and SFA were not significantly associated with HFF
-  * The beta coefficient for GI was slightly attenuated but still significant (p = 0.035). A 10-unit increment in GI gives a corresponding increment of HFF by 18% (i.e., $exp(0.163) = 1.18$ or 18% increase)
+* In Model 3 (Base + kcal):
+  * The total energy intake (kcal) not significantly associated with HFF
+  * The beta coefficient for GI was slightly attenuated but still significant (p = 0.034). A 10-unit increment in GI gives a corresponding increment of HFF by 18% (i.e., $exp(0.163) = 1.18$ or 18% increase)
   
 * There were no significant interactions between GI and gender, age, race, education, BMI, treatment group, or SFA (results not shown here)
 
@@ -445,10 +467,9 @@ t2 <- update(fit_gi, .~. + bmi) %>%
   add_global_p(keep = TRUE, include = Educ3)
 
 # Base + dietary variables (including kcal) 
-t3 <- update(fit_gi, .~. + kcal100 + SFA_ea) %>%
+t3 <- update(fit_gi, .~. + kcal100) %>%
   tbl_regression(label = c(var_labs, 
-                           kcal100 = "Energy (per 100 kcal)",
-                           SFA_ea = "SFA, gram (energy-adjusted)"),
+                           kcal100 = "Energy (per 100 kcal)"),
                  estimate_fun = label_style_number(digits = 3),
                  pvalue_fun = label_style_pvalue(digits = 3)) %>% 
   add_global_p(keep = TRUE, include = Educ3)
@@ -462,6 +483,25 @@ tbl_merge(tbls = list(t1, t2, t3),
                 p.value_3 = "**p**") %>% 
   as_flex_table()
 
+```
+
+* The results above suggest that GI is significantly positively associated with HFF when adjusted for demographics (Model 1), demographics plus BMI (Model 2), or demographics plus energy intake (Model 3). In order to estimate how HFF differs according to GI levels, GI values were categorized into 3 equal tertiles (38.2-56.3, 56.4-60, >60) and then this categorical GI variable was entered into the model, instead of using GI as continuous as in the previous model. 
+
+* The table below shows estimated means (with 95% confidence intervals) of HFF for the tertile groups, after adjusting for the demographic variables.
+  * As expected, the mean HFF values (see the column `emmean`) tend to be larger for greater tertile groups.
+  * A significant difference was found between the 1st and the 3rd tertile groups (p = 0.0198). There were no significant differences between (1st vs 2nd) or (2nd vs 3rd).
+
+```{r gi_cat_models, echo = FALSE, warning = FALSE, message = FALSE}
+# GL as tertiles
+fit_gi_cat3 <- lm(log(hff_Post) ~ GI_cat3 + SexM + age + Race2 + Educ3, data = df_mod)
+
+# Adjusted mean (with 95% CI) after back-transformation
+fit_gi_cat3 %>% 
+  emmeans(~GI_cat3) %>% 
+  as_tibble() %>% 
+  select(GI_cat3, emmean, lower.CL, upper.CL) %>% 
+  mutate_at(2:4, \(x) round(exp(x), 4)) %>% 
+  knitr::kable()
 ```
 
 ## Descriptive table
