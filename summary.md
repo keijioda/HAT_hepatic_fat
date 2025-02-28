@@ -357,7 +357,7 @@ HAT hepatic fat study
   - KL to communicate with Dr. Barnes
 
   - GS to look into nutrient data
-- Zoom meeting on 2/27/2025 (KL/GS/CH/KO)
+- Zoom meeting on 2/27/2025 (KL/SR/GS/CH/KO)
   - High GL due to over-eating
   - Categorize according to tertiles on GL; compare HFF?
   - Food group GL, instead of total GL, as predictors?
