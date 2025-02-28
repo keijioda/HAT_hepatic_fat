@@ -357,3 +357,9 @@ HAT hepatic fat study
   - KL to communicate with Dr. Barnes
 
   - GS to look into nutrient data
+- Zoom meeting on 2/27/2025 (KL/GS/CH/KO)
+  - High GL due to over-eating
+  - Categorize according to tertiles on GL; compare HFF?
+  - Food group GL, instead of total GL, as predictors?
+    - by foods with high/low GI?
+  - Remove SFA from Model 3
