@@ -380,6 +380,59 @@ HAT hepatic fat study
 | kcal (mean (SD))          |           | 1957.67 (591.15)    |
 | SFA_ea (mean (SD))        |           | 27.68 (6.82)        |
 
+## Additional analyses
+
+### Models including treatment and its interaction with GL
+
+- To examine whether the relationship between HFF and GL differs between
+  the control and the avocado groups, models were run including the
+  treatment main effect (control/avocado, control as reference) and its
+  interaction term with GL.
+  - If a significant trt x GL interaction exists, this would suggest
+    that the relationship between HFF and GL differs between the two
+    groups
+- See below for the results of Models 1 to 3, this time including trt
+  and trt \* GL interaction:
+  - Note that the main effect for GL/10 now represents the slope for the
+    control group, which is not significant for all models.
+  - The interaction term trt \* GL is positive but non-significant,
+    suggesting that the avocado group has a slightly more positive
+    association compared to the control group, but the difference in
+    slope is not statistically significant
+
+<img src="summary_files/figure-gfm/gl_intx_models-1.png" width="1976" />
+
+### Models including treatment and its interaction with GI
+
+- Similar models were run, but this time for GI
+  - The interaction term trt \* GI was not significant in all models,
+    suggesting that the relationship between HFF and GI did not differ
+    significantly between the two groups
+
+<img src="summary_files/figure-gfm/gi_intx_models-1.png" width="1976" />
+
+### Models adjusting for avocado intake
+
+- To examine if the relationship between HFF and GL/GI may be at least
+  partially mediated by avocado intake, models were run including
+  avocado intake (gram/day) this time
+  - Avocado intake was calculated for each subject, by averaging avocado
+    intake across multiple recalls per subject
+  - For regression models, avocado intake was divided by 100. Thus, the
+    estimated beta coefficient for avocado intake represents the change
+    in log(HFF) for each 100 g/day increment of avocado intake
+- For GL models, avocado intake was not significantly associated with
+  HFF. The estimated beta coefficient for GL main effect was virtually
+  unchanged in all models
+
+<img src="summary_files/figure-gfm/gl_avoc_models-1.png" width="2108" />
+
+- For GI models, avocado intake was not significantly associated with
+  HFF. The estimated beta coefficient for GI main effect was virtually
+  unchanged in all models
+
+<img src="summary_files/figure-gfm/gi_avoc_models-1.png" width="2108" />
+
 ## Notes
 
 - Zoom meeting on 1/23/2025 (KL/GS/CH/KO)

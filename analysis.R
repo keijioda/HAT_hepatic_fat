@@ -181,6 +181,9 @@ hfat_wide <- hfat %>%
 
 hfat_wide %>% print(n = Inf)
 
+pid_no_MRI <- hfat %>% filter(is.na(mridate)) %>% select(pid)
+pid_2_post <- hfat %>% filter(pid %in% c(15154629, 15217132, 15235033)) %>% distinct(pid)
+
 # Checking distributions
 # Hepatic fat fraction
 hfat %>% 
@@ -335,6 +338,37 @@ hfat %>%
 #   summarize(GL = mean(GL), GI = mean(GI)) %>% 
 #   rename(pid = cpartid)
 
+
+# Avocado intake ----------------------------------------------------------
+# Subjects: n = 961
+avoc <- read_csv("./data/HAT_gram_intake_by_FG_050725.csv") %>% 
+  select(1:3, Avocado)
+n_distinct(avoc$cpartid)
+nrow(avoc)
+names(avoc)
+
+# # GL variables
+# GL_vars <- names(diet) %>% grep("_GL", ., value = TRUE)
+# diet %>% select(all_of(GL_vars)) %>% colMeans()
+# 
+# # GI variables
+# GI_vars <- names(diet) %>% grep("_GI", ., value = TRUE)
+# diet %>% select(all_of(GI_vars)) %>% colMeans()
+
+# # Average GL/GI by PID
+# glgi <- diet %>%
+#   mutate(GL = rowSums(across(all_of(GL_vars)))) %>%
+#   mutate(GI = rowSums(across(all_of(GI_vars)))) %>%
+#   group_by(cpartid) %>%
+#   summarize(GL = mean(GL), GI = mean(GI)) %>%
+#   rename(pid = cpartid)
+
+# Average avocado by PID
+avoc2 <- avoc %>%
+  group_by(cpartid) %>%
+  summarize(avg_avoc_gd = mean(Avocado)) %>%
+  rename(pid = cpartid)
+
 # Dietary data for covariate from GS --------------------------------------
 
 # Using SPSS data file: n = 1008
@@ -405,18 +439,53 @@ demog %>%
   ggplot(aes(x = bmi)) +
   geom_histogram()
 
+hfat %>% 
+  filter(is.na(mridate)) %>% 
+  distinct(pid)
+
+demog %>%
+  filter(pid %in% c(15154629, 15217132, 15235033, 10015906, 15129861, 15232603)) %>% 
+  select(pid, randarm)
+
 # Inner-join yields n = 955 subjects
 # There are 46 PIDs whose HFF post is missing
 # There are  6 PIDs whose HFF pre  is missing
 # After removing these, n = 903 subjects
 df <- demog %>% 
   # inner_join(glgi2) %>% 
+  inner_join(avoc2 %>% select(pid, avg_avoc_gd)) %>%
   inner_join(diet_other) %>% 
   inner_join(hfat_wide) %>% 
   filter(!is.na(hff_Post)) %>% 
   filter(!is.na(hff_Pre)) %>% 
   rename(GL = avg_GL_glucose,
          GI = avg_GI_glucose)
+
+demog %>% 
+  anti_join(df, by = "pid") %>% 
+  select(randarm) %>% 
+  table()
+
+demog %>% 
+  inner_join(diet_other) %>% 
+  inner_join(hfat_wide) %>% 
+  filter(is.na(hff_Post)) %>% 
+  select(randarm) %>% table()
+
+demog %>% 
+  inner_join(diet_other) %>% 
+  inner_join(hfat_wide) %>% 
+  filter(is.na(hff_Pre)) %>% 
+  select(randarm) %>% table()
+
+demog %>% 
+  semi_join(pid_no_MRI) %>% 
+  select(randarm) %>% table()
+
+demog %>% 
+  semi_join(pid_2_post) %>% 
+  select(randarm) %>% table()
+
 
 df %>% 
   select(hff_Pre, hff_Post) %>% 
@@ -633,6 +702,10 @@ table_vars <- c("SexM", "age", "Race2", "Educ3", "bmi", "Trt", "hff_Pre", "hff_P
 CreateTableOne(table_vars, data = df) %>% 
   print(showAllLevels = TRUE, nonnormal = c("hff_Pre", "hff_Post"))
 
+df %>% 
+  select(Trt) %>% 
+  table()
+
 # Linear models -----------------------------------------------------------
 library(gtsummary)
 
@@ -642,7 +715,8 @@ df_mod <- df %>%
   mutate(GL10 = GL / 10,
          # GI100 = GI / 100,
          GI10 = GI / 10,
-         kcal100 = kcal / 100) %>% 
+         kcal100 = kcal / 100,
+         avg_avoc_100gd = avg_avoc_gd / 100) %>% 
   mutate(GL_cat3 = cut(GL, quantile(GL, 0:3/3), include.lowest = TRUE),
          GL_cat3 = factor(GL_cat3, labels = c("1st tertile", "2nd tertile", "3rd tertile")),
          GI_cat3 = cut(GI, quantile(GI, 0:3/3), include.lowest = TRUE),
@@ -709,6 +783,37 @@ tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
                 p.value_3 = "**p**")
 
 update(fit_gl, .~. + kcal100 + pcten_SFA) %>% summary()
+update(fit_gl, .~. + kcal100 + GL10 * kcal100) %>% summary()
+
+# Model with Trt and its interaction with GL
+t1 <- update(fit_gl, .~. + Trt + GL10*Trt) %>%
+  tbl_regression(label = var_labs,
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+t2 <- update(fit_gl, .~. + Trt + GL10*Trt + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + dietary variables (including kcal) 
+# t3 <- update(fit_gl, .~. + kcal100 + SFA_ea) %>%
+t3 <- update(fit_gl, .~. + Trt + GL10*Trt + kcal100) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
+                       tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**")
 
 # GL as tertiles
 fit_gl_cat3 <- lm(log(hff_Post) ~ GL_cat3 + SexM + age + Race2 + Educ3, data = df_mod)
@@ -734,7 +839,24 @@ df_mod %>%
 df_mod %>%
   filter(Trt == "Cntrl") %>%
   # filter(Trt == "Avocado") %>%
+  nrow()
+
+df_mod %>%
+  filter(Trt == "Cntrl") %>%
+  # filter(Trt == "Avocado") %>%
   lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3, data = .) %>% 
+  summary()
+
+df_mod %>%
+  filter(Trt == "Cntrl") %>%
+  # filter(Trt == "Avocado") %>%
+  lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3 + bmi, data = .) %>% 
+  summary()
+
+df_mod %>%
+  filter(Trt == "Cntrl") %>%
+  # filter(Trt == "Avocado") %>%
+  lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3 + kcal100, data = .) %>% 
   summary()
 
 # Models for GI
@@ -795,6 +917,32 @@ tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
                 p.value_2 = "**p**", 
                 p.value_3 = "**p**")
 
+update(fit_gl, .~. + kcal100 + GI10 * kcal100) %>% summary()
+
+# Control group only
+df_mod %>%
+  filter(Trt == "Cntrl") %>%
+  # filter(Trt == "Avocado") %>%
+  nrow()
+
+df_mod %>%
+  filter(Trt == "Cntrl") %>%
+  # filter(Trt == "Avocado") %>%
+  lm(log(hff_Post) ~ GI10 + SexM + age + Race2 + Educ3, data = .) %>% 
+  summary()
+
+df_mod %>%
+  filter(Trt == "Cntrl") %>%
+  # filter(Trt == "Avocado") %>%
+  lm(log(hff_Post) ~ GI10 + SexM + age + Race2 + Educ3 + bmi, data = .) %>% 
+  summary()
+
+df_mod %>%
+  filter(Trt == "Cntrl") %>%
+  # filter(Trt == "Avocado") %>%
+  lm(log(hff_Post) ~ GI10 + SexM + age + Race2 + Educ3 + kcal100, data = .) %>% 
+  summary()
+
 # GI as tertiles
 fit_gi_cat3 <- lm(log(hff_Post) ~ GI_cat3 + SexM + age + Race2 + Educ3, data = df_mod)
 summary(fit_gi_cat3)
@@ -813,4 +961,85 @@ fit_gi_cat3 %>%
 # Significant difference exists between 1st and 3rd tertile
 fit_gi_cat3 %>% 
   emmeans(pairwise ~GI_cat3, adjust = "none")
- 
+
+
+# Adjusting for avocado intake --------------------------------------------
+
+# Model for GL
+# Both control and intervention
+fit_gl <- lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3 + avg_avoc_100gd, data = df_mod)
+summary(fit_gl)
+
+# Base model with demographics
+var_labs <- list(GL10 = "GL/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+
+t1 <- tbl_regression(fit_gl, 
+               label = var_labs,
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t2 <- update(fit_gl, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + dietary variables (including kcal) 
+# t3 <- update(fit_gl, .~. + kcal100 + SFA_ea) %>%
+t3 <- update(fit_gl, .~. + kcal100) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
+                        tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**")
+
+
+# Models for GI
+# Both control and intervention
+fit_gi <- lm(log(hff_Post) ~ GI10 + SexM + age + Race2 + Educ3 + avg_avoc_100gd, data = df_mod)
+summary(fit_gi)
+
+# Base model with demographics
+var_labs <- list(GI10 = "GI/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+
+t1 <- tbl_regression(fit_gi, 
+               label = var_labs,
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t2 <- update(fit_gi, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + dietary variables (including kcal) 
+# t3 <- update(fit_gi, .~. + kcal100 + SFA_ea) %>%
+t3 <- update(fit_gi, .~. + kcal100) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)"),
+                           # kcal100 = "Energy (per 100 kcal)",
+                           # SFA_ea = "SFA, gram (energy-adjusted)"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
+                        tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**")

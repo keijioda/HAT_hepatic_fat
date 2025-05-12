@@ -225,6 +225,18 @@ ggMarginal(test, type = "histogram")
 * Descriptive statistics on hepatic fat fraction (post-intervention only), GL and GI are shown below:
 
 ```{r hff_gl_gi_summary, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Avocado intake ----------------------------------------------------------
+# Subjects: n = 961
+avoc <- read_csv("./data/HAT_gram_intake_by_FG_050725.csv") %>% 
+  select(1:3, Avocado)
+
+# Average avocado by PID
+avoc2 <- avoc %>%
+  group_by(cpartid) %>%
+  summarize(avg_avoc_gd = mean(Avocado)) %>%
+  rename(pid = cpartid)
+
 # Using SPSS data file: n = 1008
 diet_other <- read_spss("./data/mean intake of selected nutriient covariates.sav")
 
@@ -234,10 +246,11 @@ diet_other <- read_spss("./data/mean intake of selected nutriient covariates.sav
 # After removing these, n = 903 subjects
 df <- demog %>% 
   # inner_join(glgi2) %>% 
-  inner_join(diet_other)   %>% 
-  inner_join(hfat_wide)    %>% 
+  inner_join(avoc2 %>% select(pid, avg_avoc_gd)) %>%
+  inner_join(diet_other) %>% 
+  inner_join(hfat_wide) %>% 
   filter(!is.na(hff_Post)) %>% 
-  filter(!is.na(hff_Pre))  %>% 
+  filter(!is.na(hff_Pre)) %>% 
   rename(GL = avg_GL_glucose,
          GI = avg_GI_glucose)
 
@@ -381,7 +394,8 @@ df_mod <- df %>%
   mutate(GL10 = GL / 10,
          # GI100 = GI / 100,
          GI10 = GI / 10,
-         kcal100 = kcal / 100) %>% 
+         kcal100 = kcal / 100,
+         avg_avoc_100gd = avg_avoc_gd / 100) %>% 
   mutate(GL_cat3 = cut(GL, quantile(GL, 0:3/3), include.lowest = TRUE),
          GL_cat3 = factor(GL_cat3, labels = c("1st tertile", "2nd tertile", "3rd tertile")),
          GI_cat3 = cut(GI, quantile(GI, 0:3/3), include.lowest = TRUE),
@@ -545,6 +559,173 @@ CreateTableOne(table_vars, data = df) %>%
   print(showAllLevels = TRUE, nonnormal = c("hff_Pre", "hff_Post")) %>% 
   kableone()
 ```
+
+## Additional analyses
+
+### Models including treatment and its interaction with GL
+
+* To examine whether the relationship between HFF and GL differs between the control and the avocado groups, models were run including the treatment main effect (control/avocado, control as reference) and its interaction term with GL.
+  * If a significant trt x GL interaction exists, this would suggest that the relationship between HFF and GL differs between the two groups
+
+* See below for the results of Models 1 to 3, this time including trt and trt * GL interaction:
+  * Note that the main effect for GL/10 now represents the slope for the control group, which is not significant for all models.
+  * The interaction term trt * GL is positive but non-significant, suggesting that the avocado group has a slightly more positive association compared to the control group, but the difference in slope is not statistically significant
+
+```{r gl_intx_models, echo = FALSE, warning = FALSE, message = FALSE}
+# Model with Trt and its interaction with GL
+t1 <- update(fit_gl, .~. + Trt + GL10*Trt) %>%
+  tbl_regression(label = var_labs,
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+t2 <- update(fit_gl, .~. + Trt + GL10*Trt + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+t3 <- update(fit_gl, .~. + Trt + GL10*Trt + kcal100) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge(tbls = list(t1, t2, t3),
+                       tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**") %>% 
+  as_flex_table()
+```
+
+### Models including treatment and its interaction with GI
+
+* Similar models were run, but this time for GI
+  * The interaction term trt * GI was not significant in all models, suggesting that the relationship between HFF and GI did not differ significantly between the two groups
+
+```{r gi_intx_models, echo = FALSE, warning = FALSE, message = FALSE}
+# Model with Trt and its interaction with GL
+t1 <- update(fit_gi, .~. + Trt + GI10*Trt) %>%
+  tbl_regression(label = var_labs,
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+t2 <- update(fit_gi, .~. + Trt + GI10*Trt + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+t3 <- update(fit_gi, .~. + Trt + GI10*Trt + kcal100) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge(tbls = list(t1, t2, t3),
+                       tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**") %>% 
+  as_flex_table()
+```
+
+### Models adjusting for avocado intake
+
+* To examine if the relationship between HFF and GL/GI may be at least partially mediated by avocado intake, models were run including avocado intake (gram/day) this time
+  * Avocado intake was calculated for each subject, by averaging avocado intake across multiple recalls per subject
+  * For regression models, avocado intake was divided by 100. Thus, the estimated beta coefficient for avocado intake represents the change in log(HFF) for each 100 g/day increment of avocado intake
+
+* For GL models, avocado intake was not significantly associated with HFF. The estimated beta coefficient for GL main effect was virtually unchanged in all models
+
+```{r gl_avoc_models, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Model with Avocado intake
+fit_gl <- lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3 + avg_avoc_100gd, data = df_mod)
+
+var_labs <- list(GL10 = "GL/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+
+t1 <- tbl_regression(fit_gl, 
+               label = c(var_labs,
+                         avg_avoc_100gd = "Avocado intake (per 100 g/day)"),
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+t2 <- update(fit_gl, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, 
+                         avg_avoc_100gd = "Avocado intake (per 100 g/day)",
+                         bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+t3 <- update(fit_gl, .~. + kcal100) %>%
+  tbl_regression(label = c(var_labs, 
+                           avg_avoc_100gd = "Avocado intake (per 100 g/day)",
+                           kcal100 = "Energy (per 100 kcal)"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+tbl_merge(tbls = list(t1, t2, t3),
+                       tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**") %>% 
+  as_flex_table()
+```
+
+* For GI models, avocado intake was not significantly associated with HFF. The estimated beta coefficient for GI main effect was virtually unchanged in all models
+
+```{r gi_avoc_models, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Model with Avocado intake
+fit_gi <- lm(log(hff_Post) ~ GI10 + SexM + age + Race2 + Educ3 + avg_avoc_100gd, data = df_mod)
+
+var_labs <- list(GI10 = "GI/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+
+t1 <- tbl_regression(fit_gi, 
+               label = c(var_labs,
+                         avg_avoc_100gd = "Avocado intake (per 100 g/day)"),
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+t2 <- update(fit_gi, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, 
+                          avg_avoc_100gd = "Avocado intake (per 100 g/day)",
+                          bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+t3 <- update(fit_gi, .~. + kcal100) %>%
+  tbl_regression(label = c(var_labs, 
+                           avg_avoc_100gd = "Avocado intake (per 100 g/day)",
+                           kcal100 = "Energy (per 100 kcal)"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+tbl_merge(tbls = list(t1, t2, t3),
+                       tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**") %>% 
+  as_flex_table()
+```
+
 
 ## Notes
 
