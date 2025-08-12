@@ -23,7 +23,9 @@ HAT hepatic fat study
   - Includes demographics (age, gender, race, education), BMI, and GL/GI
 
 <!-- * Dietary data: A CSV file `HAT_GL_GI_by_FG_updated_080224.csv` -->
+
 <!--   * n.obs = 2845 from n = 961 distinct PIDs -->
+
 <!--   * Include glycemic load/index from various food groups by subject and visit -->
 
 ## Data check on hepatic fat
@@ -254,7 +256,7 @@ HAT hepatic fat study
 - There were no significant interactions between GL and gender, age,
   race, education, BMI, treatment group, or SFA (results not shown here)
 
-<img src="summary_files/figure-gfm/gl_models-1.png" width="1976" />
+![](summary_files/figure-gfm/gl_models-1.png)<!-- -->
 
 - The results above suggest that GL is significantly positively
   associated with HFF when adjusted for demographic variables (gender,
@@ -325,7 +327,7 @@ HAT hepatic fat study
 - There were no significant interactions between GI and gender, age,
   race, education, BMI, treatment group, or SFA (results not shown here)
 
-<img src="summary_files/figure-gfm/gi_models-1.png" width="1976" />
+![](summary_files/figure-gfm/gi_models-1.png)<!-- -->
 
 - The results above suggest that GI is significantly positively
   associated with HFF when adjusted for demographics (Model 1),
@@ -400,7 +402,7 @@ HAT hepatic fat study
     association compared to the control group, but the difference in
     slope is not statistically significant
 
-<img src="summary_files/figure-gfm/gl_intx_models-1.png" width="1976" />
+![](summary_files/figure-gfm/gl_intx_models-1.png)<!-- -->
 
 ### Models including treatment and its interaction with GI
 
@@ -409,7 +411,7 @@ HAT hepatic fat study
     suggesting that the relationship between HFF and GI did not differ
     significantly between the two groups
 
-<img src="summary_files/figure-gfm/gi_intx_models-1.png" width="1976" />
+![](summary_files/figure-gfm/gi_intx_models-1.png)<!-- -->
 
 ### Models adjusting for avocado intake
 
@@ -425,13 +427,55 @@ HAT hepatic fat study
   HFF. The estimated beta coefficient for GL main effect was virtually
   unchanged in all models
 
-<img src="summary_files/figure-gfm/gl_avoc_models-1.png" width="2108" />
+![](summary_files/figure-gfm/gl_avoc_models-1.png)<!-- -->
 
 - For GI models, avocado intake was not significantly associated with
   HFF. The estimated beta coefficient for GI main effect was virtually
   unchanged in all models
 
-<img src="summary_files/figure-gfm/gi_avoc_models-1.png" width="2108" />
+![](summary_files/figure-gfm/gi_avoc_models-1.png)<!-- -->
+
+### Models including HOMA-IR and its interaction with GL
+
+- To examine whether the relationship between HFF and GL differs by
+  insulin resistance, models were run including HOMA-IR tertile groups
+  (the lowest tertile group as reference) and their interaction terms
+  with GL.
+  - HOMA-IR was calculated as insulin (uU/ml) \* glucose (mg/dL) / 405.
+    For the models, we used HOMA-IR measured at visit 8. Fifteen
+    participants did not have their HOMA-IR values at this time point.
+  - The distribution of HOMA-IR was highly right-skewed, having some
+    large outliers. We used glucose \< 240 mg/dL and insulin \< 50 uU/mL
+    for inclusion criteria to exclude unusual outliers on HOMA-IR. These
+    criteria further removed 30 participants from the analytic data,
+    resulting n = 858.
+  - Participants were divided into tertile groups according to their
+    HOMA-IR values. The HOMA-IR values from the tertile range from
+    0.47-2.35, 2.36-4.36, 4.37-21.9 for the 1st, 2nd and 3rd tertiles,
+    respectively. The median HOMA-IR was 3.2 for overall.
+- See below for the results of Models 1 to 3, this time including
+  HOMA-IR main effects and its interaction with GL:
+  - The HOMA-IR main effects were all positive and significantly
+    different from zero, indicating that HFF was significantly higher
+    for those with high HOMA-IR values.
+  - The interaction terms HOMA-IR \* GL were all non-significant,
+    suggesting that the association between GL and HFF did not differ by
+    HOMA-IR tertile groups.
+  - When the HOMA-IR main effects were entered into the model without
+    their interactions with GL, the estimated beta coefficient for GL
+    became non-significant (not shown here). This suggests that the
+    association between GL and HFF is at least partially mediated by
+    HOMA-IR.
+
+![](summary_files/figure-gfm/gl_homa_intx_models-1.png)<!-- -->
+
+### Models including HOMA-IR and its interaction with GI
+
+- The results were very similar to those obtained for the GL models
+  above, except that the HOMA-IR main effects are all non-significant.
+  Their interaction terms with GI were also non-significant.
+
+![](summary_files/figure-gfm/gi_homa_intx_models-1.png)<!-- -->
 
 ## Notes
 

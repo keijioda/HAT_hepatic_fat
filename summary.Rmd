@@ -726,6 +726,138 @@ tbl_merge(tbls = list(t1, t2, t3),
   as_flex_table()
 ```
 
+### Models including HOMA-IR and its interaction with GL
+
+* To examine whether the relationship between HFF and GL differs by insulin resistance, models were run including HOMA-IR tertile groups (the lowest tertile group as reference) and their interaction terms with GL.
+  * HOMA-IR was calculated as insulin (uU/ml) * glucose (mg/dL) / 405. For the models, we used HOMA-IR measured at visit 8. Fifteen participants did not have their HOMA-IR values at this time point.
+  * The distribution of HOMA-IR was highly right-skewed, having some large outliers. We used glucose < 240 mg/dL and insulin < 50 uU/mL for inclusion criteria to exclude unusual outliers on HOMA-IR. These criteria further removed 30 participants from the analytic data, resulting n = 858.
+  * Participants were divided into tertile groups according to their HOMA-IR values. The HOMA-IR values from the tertile range from 0.47-2.35, 2.36-4.36, 4.37-21.9 for the 1st, 2nd and 3rd tertiles, respectively. The median HOMA-IR was 3.2 for overall.
+* See below for the results of Models 1 to 3, this time including HOMA-IR main effects and its interaction with GL:
+  * The HOMA-IR main effects were all positive and significantly different from zero, indicating that HFF was significantly higher for those with high HOMA-IR values. 
+  * The interaction terms HOMA-IR * GL were all non-significant, suggesting that the association between GL and HFF did not differ by HOMA-IR tertile groups.
+  * When the HOMA-IR main effects were entered into the model without their interactions with GL, the estimated beta coefficient for GL became non-significant (not shown here). This suggests that the association between GL and HFF is at least partially mediated by HOMA-IR. 
+* A sensitivity analysis was conducted, after further excluding those with HOMA-IR > 15 (n = 12). The beta coefficients did not change very much (slight changes at the third decimal point; not shown here)
+
+```{r gl_homa_intx_models, echo = FALSE, warning = FALSE, message = FALSE}
+# Insulin resistance data
+# If insulin or glucose is missing, set HOMA-IR to be missing
+homa <- read_csv("./data/HAT_LabResults w HOMA IR calculated.csv")
+
+# Extract only visit 8
+homa_visit8 <- homa %>% 
+  filter(visitcode == "V08")
+
+# Left-join with df
+df_ins <- df %>% 
+  left_join(homa_visit8, by = "pid")
+
+# If insulin or glucose is missing, exclude (n = 888)
+# Exclude if glucose >= 240 or insulin >= 50
+# Yields n = 858 
+df_ins2 <- df_ins %>%
+  filter(!is.na(Insulin) & !is.na(glucose)) %>% 
+  filter(glucose < 240, Insulin < 50)
+
+# Create tertile groups
+tertile_breaks <- quantile(df_ins2$HOMA_IR, probs = 0:3/3, na.rm = TRUE)
+df_ins3 <- df_ins2 %>%
+  mutate(HOMA_IR3 = cut(HOMA_IR, breaks = tertile_breaks, include.lowest = TRUE),
+         HOMA_IR3 = factor(HOMA_IR3, labels = c("Tertile1", "Tertile2", "Tertile3")))
+
+# Change units
+# Create tertile groups
+df_ins3_mod <- df_ins3 %>% 
+  mutate(GL10 = GL / 10,
+         # GI100 = GI / 100,
+         GI10 = GI / 10,
+         kcal100 = kcal / 100,
+         avg_avoc_100gd = avg_avoc_gd / 100) %>% 
+  mutate(GL_cat3 = cut(GL, quantile(GL, 0:3/3), include.lowest = TRUE),
+         GL_cat3 = factor(GL_cat3, labels = c("1st tertile", "2nd tertile", "3rd tertile")),
+         GI_cat3 = cut(GI, quantile(GI, 0:3/3), include.lowest = TRUE),
+         GI_cat3 = factor(GI_cat3, labels = c("1st tertile", "2nd tertile", "3rd tertile")))
+
+# Model for GL
+fit_gl <- lm(log(hff_Post) ~ GL10 + SexM + age + Race2 + Educ3 + HOMA_IR3 + GL10 * HOMA_IR3, data = df_ins3_mod)
+
+# Base model with demographics
+var_labs <- list(GL10 = "GL/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+
+t1 <- tbl_regression(fit_gl, 
+               label = var_labs,
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t2 <- update(fit_gl, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + dietary variables (including kcal) 
+t3 <- update(fit_gl, .~. + kcal100) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge(tbls = list(t1, t2, t3),
+                       tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**") %>% 
+  as_flex_table()
+```
+
+### Models including HOMA-IR and its interaction with GI
+
+* The results were very similar to those obtained for the GL models above, except that the HOMA-IR main effects are all non-significant. Their interaction terms with GI were also non-significant.
+* A sensitivity analysis was conducted, after further excluding those with HOMA-IR > 15 (n = 12). The beta coefficients did not change very much (slight changes at the third decimal point; not shown here)
+
+```{r gi_homa_intx_models, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Models for GI
+# fit_gi <- lm(log(hff_Post) ~ GI10 + SexM + age + Race2 + Educ3 + HOMA_IR3, data = df_ins3_mod)
+fit_gi <- lm(log(hff_Post) ~ GI10 + SexM + age + Race2 + Educ3 + HOMA_IR3 + GI10 * HOMA_IR3, data = df_ins3_mod)
+
+# Base model with demographics
+var_labs <- list(GI10 = "GI/10", SexM = "Sex", age = "Age", Race2 = "Race", Educ3 = "Education")
+
+t1 <- tbl_regression(fit_gi, 
+               label = var_labs,
+               estimate_fun = label_style_number(digits = 3),
+               pvalue_fun   = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + BMI
+t2 <- update(fit_gi, .~. + bmi) %>%
+  tbl_regression(label = c(var_labs, bmi = "BMI"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Base + dietary variables (including kcal) 
+t3 <- update(fit_gi, .~. + kcal100) %>%
+  tbl_regression(label = c(var_labs, 
+                           kcal100 = "Energy (per 100 kcal)"),
+                 estimate_fun = label_style_number(digits = 3),
+                 pvalue_fun = label_style_pvalue(digits = 3)) %>% 
+  add_global_p(keep = TRUE, include = Educ3)
+
+# Model comparisons
+tbl_merge(tbls = list(t1, t2, t3),
+                       tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**")) %>% 
+  modify_header(label = "**Variable**", 
+                p.value_1 = "**p**", 
+                p.value_2 = "**p**", 
+                p.value_3 = "**p**") %>% 
+  as_flex_table()
+```
 
 ## Notes
 

@@ -694,7 +694,6 @@ df %>%
   geom_histogram() +
   facet_wrap(~nutr, scales = "free")
 
-
 # Table 1 -----------------------------------------------------------------
 
 table_vars <- c("SexM", "age", "Race2", "Educ3", "bmi", "Trt", "hff_Pre", "hff_Post", "GL", "GI", "kcal", "SFA_ea")
