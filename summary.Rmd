@@ -553,10 +553,13 @@ fit_gi_cat3 %>%
 
 ```{r table1, echo = FALSE, warning = FALSE, message = FALSE}
 
-table_vars <- c("SexM", "age", "Race2", "Educ3", "bmi", "Trt", "hff_Pre", "hff_Post", "GL", "GI", "kcal", "SFA_ea")
+table_vars <- c("SexM", "age", "Race2", "Educ3", "bmi", "Trt", "hff_Pre_pct", "hff_Post_pct", "GL", "GI", "kcal", "SFA_ea")
 
-CreateTableOne(table_vars, data = df) %>% 
-  print(showAllLevels = TRUE, nonnormal = c("hff_Pre", "hff_Post")) %>% 
+df %>% 
+  mutate(hff_Pre_pct = hff_Pre * 100,
+         hff_Post_pct = hff_Post * 100) %>% 
+  CreateTableOne(table_vars, data = .) %>% 
+  print(showAllLevels = TRUE, nonnormal = c("hff_Pre_pct", "hff_Post_pct")) %>% 
   kableone()
 ```
 
@@ -857,6 +860,20 @@ tbl_merge(tbls = list(t1, t2, t3),
                 p.value_2 = "**p**", 
                 p.value_3 = "**p**") %>% 
   as_flex_table()
+```
+
+### Summary statistics on HOMA-IR
+
+
+```{r homa_summary_tab, echo = FALSE, warning = FALSE, message = FALSE}
+
+df_ins3 %>% 
+  mutate(hff_Pre_pct = hff_Pre * 100,
+         hff_Post_pct = hff_Post * 100) %>% 
+  CreateTableOne(c("HOMA_IR"), data = .) %>% 
+  print(showAllLevels = TRUE, nonnormal = c("HOMA_IR")) %>% 
+  kableone()
+
 ```
 
 ## Notes

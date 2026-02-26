@@ -696,10 +696,14 @@ df %>%
 
 # Table 1 -----------------------------------------------------------------
 
-table_vars <- c("SexM", "age", "Race2", "Educ3", "bmi", "Trt", "hff_Pre", "hff_Post", "GL", "GI", "kcal", "SFA_ea")
+df2 <- df %>% 
+  mutate(hff_Pre_pct = hff_Pre * 100,
+         hff_Post_pct = hff_Post * 100)
 
-CreateTableOne(table_vars, data = df) %>% 
-  print(showAllLevels = TRUE, nonnormal = c("hff_Pre", "hff_Post"))
+table_vars <- c("SexM", "age", "Race2", "Educ3", "bmi", "Trt", "hff_Pre_pct", "hff_Post_pct", "GL", "GI", "kcal", "SFA_ea")
+
+CreateTableOne(table_vars, data = df2) %>% 
+  print(showAllLevels = TRUE, nonnormal = c("hff_Pre_pct", "hff_Post_pct"))
 
 df %>% 
   select(Trt) %>% 
@@ -917,6 +921,43 @@ tbl_merge <- tbl_merge(tbls = list(t1, t2, t3),
                 p.value_3 = "**p**")
 
 update(fit_gl, .~. + kcal100 + GI10 * kcal100) %>% summary()
+
+fit_gi2 <- update(fit_gi, .~. + bmi)
+fit_gi3 <- update(fit_gi, .~. + kcal100)
+
+plot_data <- rbind(
+  cbind(coef(fit_gi), confint(fit_gi))[2,],
+  cbind(coef(fit_gi2), confint(fit_gi2))[2,],
+  cbind(coef(fit_gi3), confint(fit_gi3))[2,]
+) %>% as.data.frame() %>% 
+  setNames(c("beta", "lwr", "upr")) %>% 
+  mutate(Model = c("Model 1", "Model 2", "Model 3"),
+         Model = factor(Model)) %>% 
+  select(Model, everything()) %>% 
+  mutate_if(is.numeric, \(x) exp(x) - 1)
+
+pdf("Figure2.pdf", width = 4, height = 3)
+plot_data %>% 
+  ggplot(aes(x = Model, y = beta, ymin = lwr, ymax = upr)) +
+  geom_errorbar(width = .1) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = 2) +
+  scale_y_continuous(labels = scales::percent, limits = c(-0.05, 0.42)) + 
+  labs(x = "", y = "% Increase in HFF")
+dev.off()
+
+# library(marginaleffects)
+# plot_predictions(fit_gi, condition = "GI10", transform = "exp")
+
+plot_data %>% 
+  ggplot(aes(x = Model, y = beta, ymin = lwr, ymax = upr)) +
+  geom_linerange() +
+  geom_point() +
+  scale_x_discrete(limits = rev(levels(plot_data$Model))) + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x = "", y = "% Increase in HHF") +
+  coord_flip()
+
 
 # Control group only
 df_mod %>%

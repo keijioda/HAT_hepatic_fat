@@ -256,7 +256,7 @@ HAT hepatic fat study
 - There were no significant interactions between GL and gender, age,
   race, education, BMI, treatment group, or SFA (results not shown here)
 
-![](summary_files/figure-gfm/gl_models-1.png)<!-- -->
+<img src="summary_files/figure-gfm/gl_models-1.png" alt="" width="1976" />
 
 - The results above suggest that GL is significantly positively
   associated with HFF when adjusted for demographic variables (gender,
@@ -327,7 +327,7 @@ HAT hepatic fat study
 - There were no significant interactions between GI and gender, age,
   race, education, BMI, treatment group, or SFA (results not shown here)
 
-![](summary_files/figure-gfm/gi_models-1.png)<!-- -->
+<img src="summary_files/figure-gfm/gi_models-1.png" alt="" width="1976" />
 
 - The results above suggest that GI is significantly positively
   associated with HFF when adjusted for demographics (Model 1),
@@ -361,26 +361,26 @@ HAT hepatic fat study
   - SFA_ea: Energy-adjusted SFA intake (gram/day)
   - SFA values were energy-adjusted by the residual method
 
-|                           | level     | Overall             |
-|:--------------------------|:----------|:--------------------|
-| n                         |           | 903                 |
-| SexM (%)                  | F         | 664 (73.5)          |
-|                           | M         | 239 (26.5)          |
-| age (mean (SD))           |           | 50.74 (14.07)       |
-| Race2 (%)                 | White     | 631 (69.9)          |
-|                           | NonWhite  | 272 (30.1)          |
-| Educ3 (%)                 | LTCollege | 324 (35.9)          |
-|                           | College   | 298 (33.0)          |
-|                           | Postgrad  | 281 (31.1)          |
-| bmi (mean (SD))           |           | 32.91 (5.44)        |
-| Trt (%)                   | Cntrl     | 456 (50.5)          |
-|                           | Avocado   | 447 (49.5)          |
-| hff_Pre (median \[IQR\])  |           | 0.06 \[0.02, 0.14\] |
-| hff_Post (median \[IQR\]) |           | 0.06 \[0.03, 0.15\] |
-| GL (mean (SD))            |           | 107.61 (45.99)      |
-| GI (mean (SD))            |           | 57.98 (4.69)        |
-| kcal (mean (SD))          |           | 1957.67 (591.15)    |
-| SFA_ea (mean (SD))        |           | 27.68 (6.82)        |
+|                               | level     | Overall              |
+|:------------------------------|:----------|:---------------------|
+| n                             |           | 903                  |
+| SexM (%)                      | F         | 664 (73.5)           |
+|                               | M         | 239 (26.5)           |
+| age (mean (SD))               |           | 50.74 (14.07)        |
+| Race2 (%)                     | White     | 631 (69.9)           |
+|                               | NonWhite  | 272 (30.1)           |
+| Educ3 (%)                     | LTCollege | 324 (35.9)           |
+|                               | College   | 298 (33.0)           |
+|                               | Postgrad  | 281 (31.1)           |
+| bmi (mean (SD))               |           | 32.91 (5.44)         |
+| Trt (%)                       | Cntrl     | 456 (50.5)           |
+|                               | Avocado   | 447 (49.5)           |
+| hff_Pre_pct (median \[IQR\])  |           | 5.58 \[2.37, 13.57\] |
+| hff_Post_pct (median \[IQR\]) |           | 5.78 \[2.64, 14.78\] |
+| GL (mean (SD))                |           | 107.61 (45.99)       |
+| GI (mean (SD))                |           | 57.98 (4.69)         |
+| kcal (mean (SD))              |           | 1957.67 (591.15)     |
+| SFA_ea (mean (SD))            |           | 27.68 (6.82)         |
 
 ## Additional analyses
 
@@ -402,7 +402,7 @@ HAT hepatic fat study
     association compared to the control group, but the difference in
     slope is not statistically significant
 
-![](summary_files/figure-gfm/gl_intx_models-1.png)<!-- -->
+<img src="summary_files/figure-gfm/gl_intx_models-1.png" alt="" width="1976" />
 
 ### Models including treatment and its interaction with GI
 
@@ -411,7 +411,7 @@ HAT hepatic fat study
     suggesting that the relationship between HFF and GI did not differ
     significantly between the two groups
 
-![](summary_files/figure-gfm/gi_intx_models-1.png)<!-- -->
+<img src="summary_files/figure-gfm/gi_intx_models-1.png" alt="" width="1976" />
 
 ### Models adjusting for avocado intake
 
@@ -427,13 +427,13 @@ HAT hepatic fat study
   HFF. The estimated beta coefficient for GL main effect was virtually
   unchanged in all models
 
-![](summary_files/figure-gfm/gl_avoc_models-1.png)<!-- -->
+<img src="summary_files/figure-gfm/gl_avoc_models-1.png" alt="" width="2108" />
 
 - For GI models, avocado intake was not significantly associated with
   HFF. The estimated beta coefficient for GI main effect was virtually
   unchanged in all models
 
-![](summary_files/figure-gfm/gi_avoc_models-1.png)<!-- -->
+<img src="summary_files/figure-gfm/gi_avoc_models-1.png" alt="" width="2108" />
 
 ### Models including HOMA-IR and its interaction with GL
 
@@ -466,16 +466,29 @@ HAT hepatic fat study
     became non-significant (not shown here). This suggests that the
     association between GL and HFF is at least partially mediated by
     HOMA-IR.
+- A sensitivity analysis was conducted, after further excluding those
+  with HOMA-IR \> 15 (n = 12). The beta coefficients did not change very
+  much (slight changes at the third decimal point; not shown here)
 
-![](summary_files/figure-gfm/gl_homa_intx_models-1.png)<!-- -->
+<img src="summary_files/figure-gfm/gl_homa_intx_models-1.png" alt="" width="1976" />
 
 ### Models including HOMA-IR and its interaction with GI
 
 - The results were very similar to those obtained for the GL models
   above, except that the HOMA-IR main effects are all non-significant.
   Their interaction terms with GI were also non-significant.
+- A sensitivity analysis was conducted, after further excluding those
+  with HOMA-IR \> 15 (n = 12). The beta coefficients did not change very
+  much (slight changes at the third decimal point; not shown here)
 
-![](summary_files/figure-gfm/gi_homa_intx_models-1.png)<!-- -->
+<img src="summary_files/figure-gfm/gi_homa_intx_models-1.png" alt="" width="1976" />
+
+### Summary statistics on HOMA-IR
+
+|                          | level | Overall             |
+|:-------------------------|:------|:--------------------|
+| n                        |       | 858                 |
+| HOMA_IR (median \[IQR\]) |       | 3.20 \[1.95, 5.38\] |
 
 ## Notes
 
